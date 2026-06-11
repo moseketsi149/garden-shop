@@ -1,16 +1,67 @@
 import { useState } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { CreditCard, TrendingUp, AlertCircle, CheckCircle, Clock, Download, Plus } from 'react-feather';
+import { CreditCard, TrendingUp, AlertCircle, CheckCircle, Clock, Download, Plus, X as XIcon, FileText, Upload } from 'react-feather';
+import { toast } from 'react-toastify';
 
-const SubscriptionBilling = ({ billing, setBilling }) => {
+const SubscriptionBilling = ({ billing: initialBilling, setBilling }) => {
+  const [billing, setBillingState] = useState(initialBilling);
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [showAddBillingModal, setShowAddBillingModal] = useState(false);
   const [newBilling, setNewBilling] = useState({
     company: '',
     amount: '',
     status: 'Paid',
-    dueDate: ''
+    dueDate: '',
+    contractFile: null,
+    contractFilePreview: null
   });
+
+  const handleBillingInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewBilling(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleBillingFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setNewBilling(prev => ({
+      ...prev,
+      contractFile: file,
+      contractFilePreview: file ? URL.createObjectURL(file) : null
+    }));
+  };
+
+  const handleAddBillingSubmit = (e) => {
+    e.preventDefault();
+    if (!newBilling.company || !newBilling.amount || !newBilling.dueDate) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const billingEntry = {
+      id: `b${Date.now()}`,
+      company: newBilling.company,
+      amount: parseFloat(newBilling.amount),
+      status: newBilling.status,
+      dueDate: newBilling.dueDate,
+      contractFile: newBilling.contractFile ? newBilling.contractFile.name : null,
+      contractFilePreview: newBilling.contractFilePreview
+    };
+
+    const updatedBilling = [...billing, billingEntry];
+    setBillingState(updatedBilling);
+    if (setBilling) setBilling(updatedBilling);
+    
+    setNewBilling({
+      company: '',
+      amount: '',
+      status: 'Paid',
+      dueDate: '',
+      contractFile: null,
+      contractFilePreview: null
+    });
+    setShowAddBillingModal(false);
+    toast.success('Contract added successfully');
+  };
 
   const billingData = [
     { month: 'Jan', paid: 45000, pending: 5000, failed: 2000 },
@@ -194,12 +245,15 @@ const SubscriptionBilling = ({ billing, setBilling }) => {
         </div>
       </div>
 
-      {/* Recent Invoices */}
+{/* Recent Invoices */}
       <div className="rounded-3xl backdrop-blur-md bg-gradient-to-br from-slate-900/50 to-slate-800/50 p-6 border border-white/10">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">Recent Invoices</h3>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-all border border-white/20">
-            <Download size={16} /> Export
+          <button 
+            onClick={() => setShowAddBillingModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium hover:from-emerald-600 hover:to-teal-600 transition-all"
+          >
+            <Plus size={16} /> Add Contract
           </button>
         </div>
         <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -208,6 +262,12 @@ const SubscriptionBilling = ({ billing, setBilling }) => {
               <div className="flex-1">
                 <p className="text-white font-medium">{item.company}</p>
                 <p className="text-sm text-white/60">{item.dueDate}</p>
+                {item.contractFile && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-emerald-400">
+                    <FileText size={14} />
+                    <span>{item.contractFile}</span>
+                  </div>
+                )}
               </div>
               <div className="text-right">
                  <p className="text-white font-bold">M{item.amount.toLocaleString()}</p>
@@ -223,6 +283,108 @@ const SubscriptionBilling = ({ billing, setBilling }) => {
           ))}
         </div>
       </div>
+
+      {/* Add Billing Modal */}
+      {showAddBillingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 rounded-[2rem] p-8 w-full max-w-md border border-white/10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-white">Add Company Contract</h2>
+              <button 
+                onClick={() => setShowAddBillingModal(false)} 
+                className="text-white/60 hover:text-white"
+              >
+                <XIcon size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleAddBillingSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Company Name *</label>
+                <input
+                  type="text"
+                  name="company"
+                  value={newBilling.company}
+                  onChange={handleBillingInputChange}
+                  required
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                  placeholder="Enter company name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Amount (Monthly) *</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={newBilling.amount}
+                  onChange={handleBillingInputChange}
+                  required
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                  placeholder="Enter amount"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Status</label>
+                <select
+                  name="status"
+                  value={newBilling.status}
+                  onChange={handleBillingInputChange}
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-white/40"
+                >
+                  <option value="Paid" className="bg-slate-900">Paid</option>
+                  <option value="Pending" className="bg-slate-900">Pending</option>
+                  <option value="Past due" className="bg-slate-900">Past due</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Due Date *</label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  value={newBilling.dueDate}
+                  onChange={handleBillingInputChange}
+                  required
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Contract Document</label>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleBillingFileChange}
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-white/40"
+                />
+                {newBilling.contractFile && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-white/60">
+                    <FileText size={16} />
+                    <span>{newBilling.contractFile.name}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddBillingModal(false)}
+                  className="flex-1 px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 border border-white/20 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium hover:from-emerald-600 hover:to-teal-600"
+                >
+                  Add Contract
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

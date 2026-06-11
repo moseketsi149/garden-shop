@@ -294,7 +294,7 @@ export default function EmployeesPage() {
         </label>
         <input
           type="file"
-          accept=".pdf,.doc,.docx"
+          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           onChange={handleFileChange}
           className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
         />
@@ -302,7 +302,7 @@ export default function EmployeesPage() {
           <div className="mt-2 flex items-center gap-2 text-xs text-slate-600">
             <FileText size={16} />
             <span className="truncate">
-              {newEmployee.contractFile ? newEmployee.contractFile.name : 'Existing contract file'}
+              {typeof newEmployee.contractFile === 'string' ? newEmployee.contractFile : newEmployee.contractFile?.name || 'Contract file selected'}
             </span>
           </div>
         )}
