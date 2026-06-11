@@ -76,7 +76,7 @@ export default function SuperAdminPage() {
       case 'enterprises':
         return <EnterpriseManagement enterprises={enterprises} onStatusChange={handleToggleEnterpriseStatus} onDelete={handleDeleteEnterprise} />;
       case 'billing':
-        return <SubscriptionBilling billing={billing} />;
+        return <SubscriptionBilling billing={billing} setBilling={setBilling} />;
       case 'security':
         return <SecurityMonitoring />;
       case 'users':

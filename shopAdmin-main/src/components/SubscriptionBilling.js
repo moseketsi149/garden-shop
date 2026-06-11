@@ -16,6 +16,11 @@ const SubscriptionBilling = ({ billing: initialBilling, setBilling }) => {
     contractFilePreview: null
   });
 
+  const updateBilling = (updated) => {
+    setBillingState(updated);
+    if (setBilling) setBilling(updated);
+  };
+
   const handleBillingInputChange = (e) => {
     const { name, value } = e.target;
     setNewBilling(prev => ({ ...prev, [name]: value }));
@@ -43,13 +48,11 @@ const SubscriptionBilling = ({ billing: initialBilling, setBilling }) => {
       amount: parseFloat(newBilling.amount),
       status: newBilling.status,
       dueDate: newBilling.dueDate,
-      contractFile: newBilling.contractFile ? newBilling.contractFile.name : null,
+      contractFile: typeof newBilling.contractFile === 'string' ? newBilling.contractFile : newBilling.contractFile?.name || null,
       contractFilePreview: newBilling.contractFilePreview
     };
 
-    const updatedBilling = [...billing, billingEntry];
-    setBillingState(updatedBilling);
-    if (setBilling) setBilling(updatedBilling);
+    updateBilling([...billing, billingEntry]);
     
     setNewBilling({
       company: '',
@@ -361,7 +364,7 @@ const SubscriptionBilling = ({ billing: initialBilling, setBilling }) => {
                 {newBilling.contractFile && (
                   <div className="mt-2 flex items-center gap-2 text-xs text-white/60">
                     <FileText size={16} />
-                    <span>{newBilling.contractFile.name}</span>
+                    <span>{typeof newBilling.contractFile === 'string' ? newBilling.contractFile : newBilling.contractFile?.name}</span>
                   </div>
                 )}
               </div>
