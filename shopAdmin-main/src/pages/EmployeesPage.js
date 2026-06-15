@@ -1,54 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { X, Eye, Edit2, Trash2, Upload, FileText } from 'react-feather';
+import { X, Eye, Edit2, Trash2, Upload, FileText, ArrowLeft } from 'react-feather';
+
+const EMPLOYEES_STORAGE_KEY = 'shopAdminEmployees';
+
+const initialEmployees = [
+  {
+    id: 'e1',
+    name: 'Mamello Mosola',
+    position: 'Inventory Manager',
+    contract: 'Permanent',
+    contractFile: null,
+    salary: 'M3,200',
+    performance: 'Excellent',
+    tenure: '4 years',
+    email: 'mamello@example.com',
+    phone: '+266 5800 0001',
+    startDate: '2022-01-15',
+    department: 'Operations'
+  },
+  {
+    id: 'e2',
+    name: 'Sello Mokone',
+    position: 'Sales Specialist',
+    contract: 'Contract',
+    contractFile: null,
+    salary: 'M2,800',
+    performance: 'Strong',
+    tenure: '2 years',
+    email: 'sello@example.com',
+    phone: '+266 5800 0002',
+    startDate: '2024-03-01',
+    department: 'Sales'
+  },
+  {
+    id: 'e3',
+    name: 'Tshepo Nkosi',
+    position: 'Customer Support',
+    contract: 'Permanent',
+    contractFile: null,
+    salary: 'M2,500',
+    performance: 'Good',
+    tenure: '3 years',
+    email: 'tshepo@example.com',
+    phone: '+266 5800 0003',
+    startDate: '2023-06-10',
+    department: 'Support'
+  }
+];
 
 export default function EmployeesPage() {
   const { user } = useAuth();
-  const [employees, setEmployees] = useState([
-    {
-      id: 'e1',
-      name: 'Mamello Mosola',
-      position: 'Inventory Manager',
-      contract: 'Permanent',
-      contractFile: null,
-      salary: 'M3,200',
-      performance: 'Excellent',
-      tenure: '4 years',
-      email: 'mamello@example.com',
-      phone: '+266 5800 0001',
-      startDate: '2022-01-15',
-      department: 'Operations'
-    },
-    {
-      id: 'e2',
-      name: 'Sello Mokone',
-      position: 'Sales Specialist',
-      contract: 'Contract',
-      contractFile: null,
-      salary: 'M2,800',
-      performance: 'Strong',
-      tenure: '2 years',
-      email: 'sello@example.com',
-      phone: '+266 5800 0002',
-      startDate: '2024-03-01',
-      department: 'Sales'
-    },
-    {
-      id: 'e3',
-      name: 'Tshepo Nkosi',
-      position: 'Customer Support',
-      contract: 'Permanent',
-      contractFile: null,
-      salary: 'M2,500',
-      performance: 'Good',
-      tenure: '3 years',
-      email: 'tshepo@example.com',
-      phone: '+266 5800 0003',
-      startDate: '2023-06-10',
-      department: 'Support'
+  const navigate = useNavigate();
+  const [employees, setEmployees] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(EMPLOYEES_STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.warn('Failed to parse saved employees:', error);
+        }
+      }
     }
-  ]);
+    return initialEmployees;
+  });
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -68,6 +86,12 @@ export default function EmployeesPage() {
     performance: 'Good',
     tenure: ''
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(EMPLOYEES_STORAGE_KEY, JSON.stringify(employees));
+    }
+  }, [employees]);
 
   const resetForm = () => {
     setNewEmployee({
@@ -384,6 +408,10 @@ export default function EmployeesPage() {
 
   return (
     <section className="space-y-8">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4">
+        <ArrowLeft size={20} />
+        <span className="text-sm font-medium">Go Back</span>
+      </button>
       <div className="flex justify-between items-center">
         <div className="rounded-[2rem] bg-white p-8 shadow-card">
           <h1 className="text-3xl font-semibold text-slate-900">Employee directory</h1>

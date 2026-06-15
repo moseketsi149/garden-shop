@@ -1,4 +1,6 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const performanceData = [
@@ -11,11 +13,16 @@ const performanceData = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isSuperAdmin = user?.role === 'super-admin';
 
   if (isSuperAdmin) {
     return (
       <section className="space-y-8">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
         <div className="rounded-[2rem] bg-white p-8 shadow-card">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -83,6 +90,10 @@ export default function DashboardPage() {
 
   return (
     <section className="space-y-8">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4">
+        <ArrowLeft size={20} />
+        <span className="text-sm font-medium">Go Back</span>
+      </button>
       <div className="rounded-[2rem] bg-white p-8 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>

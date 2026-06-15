@@ -88,14 +88,14 @@ export default function ShopHeader() {
       : '';
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+    <header className="sticky top-0 z-50 bg-white border-b border-blue-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
           <Link
             to="/"
-            className="text-2xl font-bold text-green-700"
+            className="text-2xl font-bold text-sky-700"
           >
             🌿 Garden Shop
           </Link>
@@ -110,25 +110,71 @@ export default function ShopHeader() {
         {/* Navigation */}
         <nav className="flex items-center flex-wrap gap-4">
 
-          <NavLink to="/Home">
-               Home
-            </NavLink>
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `px-3 py-2 rounded transition ${
+                isActive
+                  ? 'bg-sky-700 text-white'
+                  : 'text-slate-700 hover:bg-blue-50'
+              }`
+            }
+          >
+            Home
+          </NavLink>
 
-          <NavLink to="/shop">
+          <NavLink
+            to="/shop"
+            className={({ isActive }) =>
+              `px-3 py-2 rounded transition ${
+                isActive
+                  ? 'bg-sky-700 text-white'
+                  : 'text-slate-700 hover:bg-blue-50'
+              }`
+            }
+          >
             Shop
           </NavLink>
 
-           <NavLink to="/locations">
-             Locations
-           </NavLink>
+          <NavLink
+            to="/locations"
+            className={({ isActive }) =>
+              `px-3 py-2 rounded transition ${
+                isActive
+                  ? 'bg-sky-700 text-white'
+                  : 'text-slate-700 hover:bg-blue-50'
+              }`
+            }
+          >
+            Locations
+          </NavLink>
 
-           <NavLink to="/weather">
-             Weather
-           </NavLink>
+          <NavLink
+            to="/weather"
+            className={({ isActive }) =>
+              `px-3 py-2 rounded transition ${
+                isActive
+                  ? 'bg-sky-700 text-white'
+                  : 'text-slate-700 hover:bg-blue-50'
+              }`
+            }
+          >
+            Weather
+          </NavLink>
 
-            <NavLink to="/testimonial">
-               Testimonials
-            </NavLink>
+          <NavLink
+            to="/testimonial"
+            className={({ isActive }) =>
+              `px-3 py-2 rounded transition ${
+                isActive
+                  ? 'bg-sky-700 text-white'
+                  : 'text-slate-700 hover:bg-blue-50'
+              }`
+            }
+          >
+            Testimonials
+          </NavLink>
 
           {/* Notifications */}
           <div
@@ -140,7 +186,7 @@ export default function ShopHeader() {
               onClick={() =>
                 setIsBellOpen((prev) => !prev)
               }
-              className="relative p-2 border rounded-full"
+              className="relative p-2 border border-blue-100 rounded-full"
             >
               <Bell size={18} />
 
@@ -152,7 +198,7 @@ export default function ShopHeader() {
             </button>
 
             {isBellOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50">
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-blue-100 rounded-lg shadow-lg z-50">
                 <div className="p-3 border-b font-semibold">
                   Notifications
                 </div>
@@ -189,15 +235,30 @@ export default function ShopHeader() {
           </NavLink>
 
           {/* Auth */}
-{user ? (
-             <>
-               <NavLink to="/profile">
-                 Profile
-               </NavLink>
+          {user ? (
+            <>
+              <NavLink to="/profile">
+                Profile
+              </NavLink>
+
+              {['company-admin', 'individual-seller'].includes(role) && (
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    `px-3 py-2 rounded transition ${
+                      isActive
+                        ? 'bg-sky-700 text-white'
+                        : 'text-slate-700 hover:bg-blue-50'
+                    }`
+                  }
+                >
+                  Manage subscription
+                </NavLink>
+              )}
 
               <Link
                 to="/logout"
-                className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded"
+                className="flex items-center gap-2 bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800"
               >
                 <LogOut size={16} />
                 Logout

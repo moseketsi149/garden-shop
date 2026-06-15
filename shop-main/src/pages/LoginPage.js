@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { ArrowLeft } from 'lucide-react';
 import { auth, db, googleProvider } from '../firebase/config';
 import { toast } from 'react-toastify';
 
@@ -34,17 +35,17 @@ export default function LoginPage() {
       if (profile.websiteName?.toLowerCase() !== websiteName.trim().toLowerCase()) {
         throw new Error('Website name does not match this account.');
       }
-      if (accountType === 'company' && profile.role !== 'company-admin') {
-        throw new Error('This account is not a company admin.');
+      
+      // Verify account type matches the user's existing profile role
+      const userRole = profile.role || 'customer';
+      if (accountType === 'company' && userRole !== 'company-admin') {
+        throw new Error('This account is registered as a customer. For company access, please register a company account.');
       }
       if (accountType === 'company' && profile.paymentStatus !== 'paid') {
-        throw new Error('Company subscription is not paid. Please complete payment.');
+        throw new Error('Your company subscription payment is pending. Please complete the subscription to access your account.');
       }
-      if (accountType === 'employee' && profile.role !== 'employee') {
-        throw new Error('This account is not an employee account.');
-      }
-      if (accountType === 'customer' && profile.role !== 'customer') {
-        throw new Error('This account is not a customer account.');
+      if (accountType === 'customer' && userRole !== 'customer' && userRole !== 'individual-seller') {
+        throw new Error('This account is registered as a company admin. Please select the Company option to log in.');
       }
       return true;
     } catch (error) {
@@ -60,16 +61,29 @@ export default function LoginPage() {
     return '/';
   };
 
+  const validateLoginAsync = async (user) => {
+    try {
+      await validateLogin(user);
+    } catch (error) {
+      toast.error(error.message || 'Unable to validate login.');
+      await signOut(auth);
+      navigate('/login', { replace: true });
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
       setLoading(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
-      await validateLogin(result.user);
-      toast.success('Successfully logged in! Welcome back.');
+      toast.success(accountType === 'company' ? '👋 Welcome back! Your company dashboard is ready.' : '👋 Welcome back! Start shopping now.');
       navigate(getRedirectPath(), { replace: true });
+      validateLoginAsync(result.user);
     } catch (error) {
-      toast.error(error.message || 'Unable to sign in.');
+      const friendlyMsg = error.code === 'auth/user-not-found' ? 'Email not found. Please check and try again.' 
+        : error.code === 'auth/wrong-password' ? 'Incorrect password. Please try again.' 
+        : error.message || 'Login failed. Please try again.';
+      toast.error(friendlyMsg);
     } finally {
       setLoading(false);
     }
@@ -79,11 +93,11 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
-      await validateLogin(result.user);
-      toast.success('Successfully logged in with Google! Welcome back.');
+      toast.success(accountType === 'company' ? '👋 Welcome! Your company dashboard is ready.' : '👋 Welcome! Start shopping now.');
       navigate(getRedirectPath(), { replace: true });
+      validateLoginAsync(result.user);
     } catch (error) {
-      toast.error(error.message || 'Google sign in failed.');
+      toast.error('Google login failed. Please try again or use email instead.');
     } finally {
       setLoading(false);
     }
@@ -91,9 +105,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-12">
-      <div className="mx-auto max-w-lg rounded-[2rem] bg-white p-10 shadow-card">
-        <h2 className="text-3xl font-semibold text-slate-900">Login</h2>
-        <p className="mt-3 text-slate-600">Sign in as a company admin, employee, or customer with your company context.</p>
+      <div className="mx-auto max-w-lg">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
+        <div className="rounded-[2rem] bg-white p-10 shadow-card">
+          <h2 className="text-3xl font-semibold text-slate-900">Login</h2>
+        <p className="mt-3 text-slate-600">Sign in as a company admin or customer. Your role is determined by your account type.</p>
         <button
           type="button"
           onClick={handleGoogleSignIn}
@@ -108,11 +127,10 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Login as</p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Account type</p>
+          <div className="grid gap-3 sm:grid-cols-2">
             {[
               { value: 'company', label: 'Company' },
-              { value: 'employee', label: 'Employee' },
               { value: 'customer', label: 'Customer' }
             ].map((option) => (
               <label key={option.value} className={`flex cursor-pointer items-center justify-between rounded-2xl border px-4 py-3 transition ${accountType === option.value ? 'border-slate-900 bg-slate-900/5 text-slate-900' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-900'}`}>
@@ -199,6 +217,7 @@ export default function LoginPage() {
               Register as Seller
             </Link>
           </p>
+        </div>
         </div>
       </div>
     </div>

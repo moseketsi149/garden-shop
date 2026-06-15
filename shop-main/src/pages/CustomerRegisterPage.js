@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { ArrowLeft } from 'lucide-react';
 import { auth, db } from '../firebase/config';
 import { toast } from 'react-toastify';
 
@@ -50,17 +51,17 @@ export default function CustomerRegisterPage() {
      
      // Validation
      if (formData.password !== formData.confirmPassword) {
-       toast.error('Passwords do not match.');
+       toast.error("🔐 Passwords don't match. Please try again.");
        return;
      }
      
      if (formData.password.length < 6) {
-       toast.error('Password must be at least 6 characters long.');
+       toast.error('🔐 Password must be at least 6 characters long.');
        return;
      }
      
      if (!termsAccepted) {
-       toast.error('Please accept the Terms of Service.');
+       toast.error('📋 Please accept the Terms of Service to continue.');
        return;
      }
 
@@ -77,7 +78,7 @@ export default function CustomerRegisterPage() {
        });
        
        // Show immediate notification for account creation
-       toast.info('Firebase account created successfully!');
+       toast.info('Setting up your account...');
 
        // Store additional user data in Firestore
        await setDoc(doc(db, 'users', user.uid), {
@@ -96,18 +97,18 @@ export default function CustomerRegisterPage() {
          updatedAt: serverTimestamp()
        });
 
-        toast.success('Account created successfully! You can now sign in.');
+        toast.success('✅ Welcome! Your account is ready. You can now sign in and start shopping.');
         navigate('/');
      } catch (error) {
        console.error('Registration error:', error);
        if (error.code === 'auth/email-already-in-use') {
-         toast.error('This email is already registered. Please sign in or use a different email.');
+         toast.error('📧 This email is already registered. Log in instead or use a different email.');
        } else if (error.code === 'auth/invalid-email') {
-         toast.error('Invalid email address. Please enter a valid email.');
+         toast.error('📧 Please enter a valid email address (e.g., name@example.com).');
        } else if (error.code === 'auth/weak-password') {
-         toast.error('Password is too weak. Please use a stronger password (at least 6 characters).');
+         toast.error('🔐 Use a stronger password (at least 6 characters with letters and numbers).');
        } else {
-         toast.error(error.message || 'Unable to create account. Please try again.');
+         toast.error('Unable to create your account. Please try again or contact support.');
        }
      } finally {
        setLoading(false);
@@ -116,7 +117,12 @@ export default function CustomerRegisterPage() {
 
   return (
     <div className="min-h-screen bg-emerald-50/30 px-6 py-12">
-      <div className="mx-auto max-w-lg rounded-[2rem] bg-white p-10 shadow-card">
+      <div className="mx-auto max-w-lg">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
+        <div className="rounded-[2rem] bg-white p-10 shadow-card">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-semibold text-slate-900">🛒 Create Customer Account</h2>
           <p className="mt-3 text-slate-600">Join our marketplace and start shopping for fresh produce.</p>
@@ -287,6 +293,7 @@ export default function CustomerRegisterPage() {
             </p>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

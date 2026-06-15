@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { ArrowLeft } from 'lucide-react';
 import { addToCart } from '../features/cart/cartSlice';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -16,7 +17,13 @@ export default function ProductPage() {
     return (
       <div>
         <ShopHeader />
-        <main className="mx-auto max-w-5xl px-6 py-12">Product not found.</main>
+        <main className="mx-auto max-w-5xl px-6 py-12">
+          <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Go Back</span>
+          </button>
+          <p>Product not found.</p>
+        </main>
       </div>
     );
   }
@@ -35,6 +42,10 @@ export default function ProductPage() {
     <div>
       <ShopHeader />
       <main className="mx-auto max-w-5xl px-6 py-12">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <img src={product.image} alt={product.name} className="rounded-[2rem] object-cover" />
           <div className="space-y-6">

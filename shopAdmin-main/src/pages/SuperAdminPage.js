@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DashboardOverview from '../components/DashboardOverview';
 import EnterpriseManagement from '../components/EnterpriseManagement';
@@ -7,7 +8,7 @@ import SecurityMonitoring from '../components/SecurityMonitoring';
 import UserRoleManagement from '../components/UserRoleManagement';
 import FinancialMonitoring from '../components/FinancialMonitoring';
 import RegistrationApprovals from '../components/RegistrationApprovals';
-import { BarChart2, Briefcase, CreditCard, Shield, Users, TrendingUp, Bell, Menu, X, UserPlus } from 'react-feather';
+import { BarChart2, Briefcase, CreditCard, Shield, Users, TrendingUp, Bell, Menu, X, UserPlus, ArrowLeft } from 'react-feather';
 
 const initialEnterprises = [
   { id: 'e1', name: 'Global Farm', status: 'Active', subscriptionStatus: 'Paid', lastPayment: '2026-05-20', users: 112, revenue: 24500, industry: 'Horticulture', plan: 'Enterprise', registrationDate: '2025-01-15', nextBilling: '2026-06-20' },
@@ -27,6 +28,7 @@ const initialBilling = [
 
 export default function SuperAdminPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [enterprises, setEnterprises] = useState(initialEnterprises);
   const [billing, setBilling] = useState(initialBilling);
@@ -95,6 +97,13 @@ export default function SuperAdminPage() {
         <div className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md bg-slate-950/50 border-b border-white/10">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 rounded-lg hover:bg-white/10 text-white"
+                title="Go Back"
+              >
+                <ArrowLeft size={20} />
+              </button>
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 rounded-lg hover:bg-white/10 text-white"

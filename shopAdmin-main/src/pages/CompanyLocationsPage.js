@@ -1,10 +1,12 @@
 import { useMemo, useState, useEffect } from 'react';
-import { MapPin, Plus, Edit2, Trash2, Save, X, Navigation } from 'react-feather';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Plus, Edit2, Trash2, Save, X, Navigation, ArrowLeft } from 'react-feather';
 import { toast } from 'react-toastify';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 export default function CompanyLocationsPage() {
+  const navigate = useNavigate();
   const [locations, setLocations] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -16,15 +18,39 @@ export default function CompanyLocationsPage() {
     lng: '',
     description: '',
     phone: '',
-    hours: ''
+    hours: '',
+    tags: ''
   });
 
   useEffect(() => {
+    // Try to show cached locations immediately to avoid long loading
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = window.localStorage.getItem('shopAdminLocations');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length) {
+            setLocations(parsed);
+            setLoading(false);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load cached locations:', e);
+    }
+
     const q = query(collection(db, 'locations'), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
       setLocations(items);
       setLoading(false);
+      try {
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('shopAdminLocations', JSON.stringify(items));
+        }
+      } catch (e) {
+        // ignore localStorage failures
+      }
     }, (err) => {
       console.error('Locations listener error:', err);
       setLoading(false);
@@ -48,13 +74,14 @@ export default function CompanyLocationsPage() {
   const handleEdit = (location) => {
     setEditingId(location.id);
     setFormData({
-      name: location.name,
-      address: location.address,
-      lat: location.lat.toString(),
-      lng: location.lng.toString(),
-      description: location.description,
-      phone: location.phone,
-      hours: location.hours
+      name: location.name || '',
+      address: location.address || '',
+      lat: location.lat != null ? String(location.lat) : '',
+      lng: location.lng != null ? String(location.lng) : '',
+      description: location.description || '',
+      phone: location.phone || '',
+      hours: location.hours || '',
+      tags: Array.isArray(location.tags) ? location.tags.join(', ') : ''
     });
   };
 
@@ -68,7 +95,8 @@ export default function CompanyLocationsPage() {
       lng: '',
       description: '',
       phone: '',
-      hours: ''
+      hours: '',
+      tags: ''
     });
   };
 
@@ -87,7 +115,10 @@ export default function CompanyLocationsPage() {
       lng: parseFloat(formData.lng) || 0,
       description: formData.description,
       phone: formData.phone,
-      hours: formData.hours
+      hours: formData.hours,
+      tags: formData.tags
+        ? formData.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
+        : []
     };
 
     if (editingId) {
@@ -121,6 +152,10 @@ export default function CompanyLocationsPage() {
 
   return (
     <section className="space-y-8">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4">
+        <ArrowLeft size={20} />
+        <span className="text-sm font-medium">Go Back</span>
+      </button>
       {/* Header */}
       <div className="rounded-[2rem] bg-white p-8 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -139,7 +174,8 @@ export default function CompanyLocationsPage() {
                 lng: '',
                 description: '',
                 phone: '',
-                hours: ''
+                hours: '',
+                tags: ''
               });
             }}
             className="inline-flex items-center gap-2 rounded-3xl bg-slate-900 px-6 py-3 text-white hover:bg-slate-800"
@@ -255,6 +291,18 @@ export default function CompanyLocationsPage() {
                 onChange={handleInputChange}
                 className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
                 placeholder="Contact phone number"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-slate-700">Tags</label>
+              <input
+                type="text"
+                name="tags"
+                value={formData.tags}
+                onChange={handleInputChange}
+                className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                placeholder="Enter tags separated by commas"
               />
             </div>
 

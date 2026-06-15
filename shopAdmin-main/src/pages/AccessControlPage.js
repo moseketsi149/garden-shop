@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'react-feather';
 
 const roleTemplates = {
   Owner: {
@@ -24,6 +26,7 @@ const roleTemplates = {
 };
 
 export default function AccessControlPage() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([
     {
       id: 'u1',
@@ -123,6 +126,10 @@ export default function AccessControlPage() {
 
   return (
     <section className="space-y-8">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4">
+        <ArrowLeft size={20} />
+        <span className="text-sm font-medium">Go Back</span>
+      </button>
       <div className="rounded-[2rem] bg-white p-8 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>

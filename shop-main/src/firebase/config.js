@@ -4,26 +4,20 @@ import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || 'AIzaSyD3Nz8q8EHVwh8i2L6luI4_viESVCWv4D0',
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || 'devsolution-dfc75.firebaseapp.com',
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || 'devsolution-dfc75',
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || 'devsolution-dfc75.firebasestorage.app',
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '368117812145',
+  appId: process.env.REACT_APP_FIREBASE_APP_ID || '1:368117812145:web:701c966141e67466b90b90',
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || 'G-BTNJQX3G77'
 };
 
-// Validate that required config values are present
 const requiredKeys = ['apiKey', 'authDomain', 'projectId'];
 const missingKeys = requiredKeys.filter(key => !firebaseConfig[key]);
 
 if (missingKeys.length > 0) {
-  console.error('Firebase Configuration Error: Missing required keys:', missingKeys);
-  console.error('Please ensure your .env file contains all required Firebase configuration values.');
-  console.error('Required environment variables:');
-  console.error('  - REACT_APP_FIREBASE_API_KEY');
-  console.error('  - REACT_APP_FIREBASE_AUTH_DOMAIN');
-  console.error('  - REACT_APP_FIREBASE_PROJECT_ID');
+  throw new Error(`Firebase Configuration Error: Missing required keys: ${missingKeys.join(', ')}`);
 }
 
 const app = initializeApp(firebaseConfig);

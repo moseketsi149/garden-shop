@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import Fuse from 'fuse.js';
 import ShopHeader from '../components/ShopHeader';
 import ProductCard from '../components/ProductCard';
@@ -8,6 +9,7 @@ import ProductCard from '../components/ProductCard';
 export default function ShopPage() {
   const products = useSelector((state) => state.order.products);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [query, setQuery] = useState(() => searchParams.get('query') || '');
   const [companyFilter, setCompanyFilter] = useState(() => searchParams.get('company') || 'all');
   const [isListening, setIsListening] = useState(false);
@@ -296,6 +298,10 @@ export default function ShopPage() {
     <div>
       <ShopHeader />
       <main className="mx-auto max-w-7xl px-6 py-12">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
         {promotions.length > 0 && (
           <div className="mb-8 rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

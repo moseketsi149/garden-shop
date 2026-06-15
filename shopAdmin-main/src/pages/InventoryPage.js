@@ -1,16 +1,67 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Edit2, Trash2, Save, X, Plus, Package } from 'react-feather';
+import { useNavigate } from 'react-router-dom';
+import { Edit2, Trash2, Save, X, Plus, ArrowLeft } from 'react-feather';
 import { toast } from 'react-toastify';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db } from '../firebase/config';
 
 const companies = ['Green Valley Farms', 'Harvest Fresh Co-op', 'Trader', 'Root & Stem Farms'];
+const INVENTORY_STORAGE_KEY = 'shopAdminInventoryProducts';
+
+const initialProducts = [
+  {
+    id: 'prod-001',
+    name: 'Fresh Organic Tomatoes',
+    company: 'Green Valley Farms',
+    price: 250,
+    stock: 45,
+    image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcccf?auto=format&fit=crop&w=600&q=80',
+    tags: ['tomatoes', 'organic', 'fresh'],
+    discount: 5,
+    package: null,
+    isNew: false
+  },
+  {
+    id: 'prod-002',
+    name: 'Premium Mixed Salad Greens',
+    company: 'Harvest Fresh Co-op',
+    price: 180,
+    stock: 3,
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80',
+    tags: ['salad', 'greens', 'vegetables'],
+    discount: 0,
+    package: null,
+    isNew: true
+  },
+  {
+    id: 'prod-003',
+    name: 'Heirloom Carrots Bundle',
+    company: 'Root & Stem Farms',
+    price: 320,
+    stock: 22,
+    image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd64b73?auto=format&fit=crop&w=600&q=80',
+    tags: ['carrots', 'heirloom', 'vegetables'],
+    discount: 10,
+    package: 'Carrots + Radishes bundle',
+    isNew: false
+  }
+];
 
 export default function InventoryPage() {
-  const [products, setProducts] = useState([]);
+  const navigate = useNavigate();
+  const [products, setProducts] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(INVENTORY_STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.warn('Failed to parse saved inventory:', error);
+        }
+      }
+    }
+    return initialProducts;
+  });
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     company: companies[0],
@@ -22,19 +73,6 @@ export default function InventoryPage() {
     package: '',
     isNew: false
   });
-
-  useEffect(() => {
-    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setProducts(items);
-      setLoading(false);
-    }, (err) => {
-      console.error('Product listener error:', err);
-      setLoading(false);
-    });
-    return unsub;
-  }, []);
 
   const lowStockAlerts = useMemo(() => products.filter((product) => product.stock <= 5).length, [products]);
   const totalValue = useMemo(() => products.reduce((sum, p) => sum + (p.price * p.stock), 0), [products]);
@@ -58,9 +96,10 @@ export default function InventoryPage() {
       package: product.package || '',
       isNew: product.isNew || false
     });
+    setShowForm(true);
   };
 
-  const handleCancel = () => {
+  const resetForm = () => {
     setEditingId(null);
     setShowForm(false);
     setFormData({
@@ -76,9 +115,11 @@ export default function InventoryPage() {
     });
   };
 
-  const handleSave = async (e) => {
+  const handleCancel = resetForm;
+
+  const handleSave = (e) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.company || !formData.price || !formData.stock) {
       toast.error('Name, company, price, and stock are required');
       return;
@@ -88,45 +129,52 @@ export default function InventoryPage() {
       name: formData.name,
       company: formData.company,
       price: parseFloat(formData.price),
-      stock: parseInt(formData.stock),
+      stock: parseInt(formData.stock, 10),
       image: formData.image || 'https://images.unsplash.com/photo-1513708923604-5b1247324237?auto=format&fit=crop&w=600&q=80',
       tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
       discount: formData.discount ? parseFloat(formData.discount) : 0,
       package: formData.package || null,
-      isNew: formData.isNew
+      isNew: formData.isNew,
     };
 
     if (editingId) {
-      await updateDoc(doc(db, 'products', editingId), productData);
+      setProducts((prev) => prev.map((product) => (
+        product.id === editingId ? { ...product, ...productData } : product
+      )));
       toast.success('Product updated successfully');
     } else {
-      await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp() });
+      const newProduct = {
+        id: `prod-${Date.now()}`,
+        ...productData
+      };
+      setProducts((prev) => [newProduct, ...prev]);
       toast.success('Product added successfully');
     }
-
-    handleCancel();
+    resetForm();
   };
 
-  const handleDelete = async (id) => {
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(products));
+    }
+  }, [products]);
+
+  const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await deleteDoc(doc(db, 'products', id));
-        toast.success('Product deleted successfully');
-      } catch (error) {
-        toast.error('Failed to delete product');
-      }
+      setProducts((prev) => prev.filter((product) => product.id !== id));
+      toast.success('Product deleted successfully');
       if (editingId === id) {
-        handleCancel();
+        resetForm();
       }
     }
   };
-
-  if (loading) {
-    return <section className="min-h-screen px-6 py-12"><div className="mx-auto max-w-7xl text-center text-slate-600">Loading inventory...</div></section>;
-  }
 
   return (
     <section className="space-y-8">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4">
+        <ArrowLeft size={20} />
+        <span className="text-sm font-medium">Go Back</span>
+      </button>
       {/* Header */}
       <div className="rounded-[2rem] bg-white p-8 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -136,19 +184,8 @@ export default function InventoryPage() {
           </div>
           <button
             onClick={() => {
+              resetForm();
               setShowForm(true);
-              setEditingId(null);
-              setFormData({
-                name: '',
-                company: companies[0],
-                price: '',
-                stock: '',
-                image: '',
-                tags: '',
-                discount: '',
-                package: '',
-                isNew: false
-              });
             }}
             className="inline-flex items-center gap-2 rounded-3xl bg-slate-900 px-6 py-3 text-white hover:bg-slate-800"
           >
@@ -297,7 +334,7 @@ export default function InventoryPage() {
                 value={formData.tags}
                 onChange={handleInputChange}
                 className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                placeholder="e.g., tomatoes, organic, vegetables, fresh"
+                placeholder="e.g., tomatoes, fruits, organic, vegetables, fresh"
               />
             </div>
 

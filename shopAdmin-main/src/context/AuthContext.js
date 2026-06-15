@@ -10,33 +10,52 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
-        setUser(null);
-        setLoading(false);
+        if (mounted) {
+          setUser(null);
+          setLoading(false);
+        }
         return;
       }
 
-      let profile = {};
-      try {
-        const snapshot = await getDoc(doc(db, 'users', currentUser.uid));
-        profile = snapshot.exists() ? snapshot.data() : {};
-      } catch (error) {
-        console.warn('Unable to load Firestore user profile, falling back to default profile.', error);
-        profile = { role: 'admin', tenant: 'default' };
-      }
-
-      setUser({
+      const baseUser = {
         uid: currentUser.uid,
         email: currentUser.email,
-        displayName: currentUser.displayName || profile.name || 'Administrator',
-        role: profile.role || 'admin',
-        tenant: profile.tenant || 'default'
-      });
-      setLoading(false);
+        displayName: currentUser.displayName || 'Administrator',
+        role: 'admin',
+        tenant: 'default',
+      };
+
+      if (mounted) {
+        setUser(baseUser);
+        setLoading(false);
+      }
+
+      try {
+        const snapshot = await getDoc(doc(db, 'users', currentUser.uid));
+        if (!mounted) return;
+
+        if (snapshot.exists()) {
+          const profile = snapshot.data();
+          setUser((prev) => ({
+            ...prev,
+            displayName: currentUser.displayName || profile.name || prev.displayName,
+            role: profile.role || prev.role,
+            tenant: profile.tenant || prev.tenant,
+          }));
+        }
+      } catch (error) {
+        console.warn('Unable to load Firestore user profile, falling back to default profile.', error);
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const logout = async () => {

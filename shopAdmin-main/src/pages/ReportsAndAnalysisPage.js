@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, FileText, Users, Package } from 'react-feather';
+import { TrendingUp, FileText, Users, Package, ArrowLeft } from 'react-feather';
+import { useNavigate } from 'react-router-dom';
 
 // Mock data for monthly product purchases
 const monthlyProductPurchases = [
@@ -25,6 +26,7 @@ const companyProductData = [
 ];
 
 export default function ReportsAndAnalysisPage() {
+  const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState('3months'); // 1month, 3months, 6months, 1year
 
   // Get the most purchased product overall
@@ -85,6 +87,10 @@ export default function ReportsAndAnalysisPage() {
 
   return (
     <section className="space-y-8">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4">
+        <ArrowLeft size={20} />
+        <span className="text-sm font-medium">Go Back</span>
+      </button>
       {/* Header */}
       <div className="rounded-[2rem] bg-white p-8 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

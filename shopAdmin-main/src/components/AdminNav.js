@@ -8,7 +8,6 @@ const links = [
   { path: '/locations', label: 'Company Locations', icon: MapPin },
   { path: '/employees', label: 'Employees', icon: Users },
   { path: '/orders', label: 'Orders', icon: Clipboard },
-  { path: '/messages', label: 'Messages', icon: MessageCircle },
   { path: '/testimonials', label: 'Testimonials', icon: ThumbsUp },
   { path: '/access-control', label: 'Access control', icon: Shield },
   { path: '/reports', label: 'Reports & Analysis', icon: TrendingUp }
@@ -34,7 +33,7 @@ export default function AdminNav() {
               to={link.path}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-3xl px-4 py-3 transition ${
-                  isActive ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  isActive ? 'bg-sky-600 text-white' : 'text-slate-300 hover:bg-sky-900/70 hover:text-white'
                 }`
               }
             >

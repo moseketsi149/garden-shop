@@ -63,12 +63,12 @@ export default function HomePage() {
           <div className="mt-8 grid gap-6 sm:grid-cols-3">
             {[
               {
-                name: 'Green Valley Farms',
+                name: 'WONDER GROW FARMS',
                 description: 'Fresh organic vegetables, heirloom tomatoes, and seasonal crop boxes delivered weekly.',
                 tags: ['tomatoes', 'vegetables', 'organic']
               },
               {
-                name: 'Harvest Fresh Co-op',
+                name: 'Motheo Greens',
                 description: 'Farm-fresh salad greens, culinary herbs, and mixed vegetable bundles from local farmers.',
                 tags: ['salad', 'herbs', 'fresh']
               },

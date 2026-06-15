@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { auth, db } from '../firebase/config';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -58,7 +59,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6 py-12">
-      <div className="w-full max-w-md rounded-[2rem] bg-white p-10 shadow-card">
+      <div className="w-full max-w-md">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
+        <div className="rounded-[2rem] bg-white p-10 shadow-card">
         <h2 className="text-3xl font-semibold text-slate-900">{isRegister ? 'Register admin' : 'Admin login'}</h2>
         {error && <p className="mt-4 rounded-2xl bg-rose-100 px-4 py-3 text-rose-700">{error}</p>}
         {success && <p className="mt-4 rounded-2xl bg-emerald-100 px-4 py-3 text-emerald-700">{success}</p>}
@@ -109,6 +115,7 @@ export default function LoginPage() {
               Register a new admin account
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>

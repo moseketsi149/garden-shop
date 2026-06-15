@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminNav from './components/AdminNav';
+import BackButton from './components/BackButton';
 import Footer from './components/Footer';
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const InventoryPage = lazy(() => import('./pages/InventoryPage'));
@@ -34,10 +35,13 @@ function RequireAuth({ children }) {
 
 function AdminLayout({ children }) {
   return (
-    <div className="min-h-screen bg-emerald-50/30">
+    <div className="min-h-screen bg-sky-50/30">
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[18rem_1fr]">
         <AdminNav />
-        <main className="px-6 py-8">{children}</main>
+        <main className="px-6 py-8">
+          <BackButton />
+          {children}
+        </main>
       </div>
     </div>
   );

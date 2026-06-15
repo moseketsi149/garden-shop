@@ -18,6 +18,7 @@ import LogoutPage from './pages/LogoutPage';
 import WeatherPage from './pages/WeatherPage';
 import PrivateRoute from './components/PrivateRoute';
 import Footer from './components/Footer';
+import BackButton from './components/BackButton';
 import { AuthProvider } from './context/AuthContext';
 import { startProductsListener } from './features/order/orderSlice';
 import { startLocationsListener as startLocationsListenerAction } from './features/locations/locationsSlice';
@@ -41,7 +42,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-emerald-50/30 text-slate-900">
+      <div className="min-h-screen bg-sky-50/30 text-slate-900">
+        <BackButton />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />

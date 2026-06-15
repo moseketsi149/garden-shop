@@ -4,8 +4,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import ShopHeader from '../components/ShopHeader';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { MapPin, Building2, Package, Navigation } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { MapPin, Building2, Package, Navigation, ArrowLeft } from 'lucide-react';
+
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -63,16 +64,23 @@ export default function LocationsPage() {
   const products = useSelector((state) => state.order.products || []);
   const locations = useSelector((state) => state.locations?.locations || []);
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const navigate = useNavigate();
 
   const activeLocations = locations.length > 0 ? locations : fallbackLocations;
 
   const companiesWithProducts = useMemo(() => {
     return activeLocations.map((location) => {
       const companyProducts = products.filter((p) => p.company === location.name);
+      const tags = Array.isArray(location.tags) ? location.tags : [];
+      const lat = Number.isFinite(Number(location.lat)) ? Number(location.lat) : null;
+      const lng = Number.isFinite(Number(location.lng)) ? Number(location.lng) : null;
       return {
         ...location,
+        tags,
         productCount: companyProducts.length,
         products: companyProducts,
+        lat,
+        lng,
       };
     });
   }, [products, activeLocations]);
@@ -84,6 +92,10 @@ export default function LocationsPage() {
     <div>
       <ShopHeader />
       <main className="mx-auto max-w-7xl px-6 py-12">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
         {/* Header Section */}
         <div className="mb-10">
           <div className="flex items-center gap-3">
@@ -114,16 +126,18 @@ export default function LocationsPage() {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {companiesWithProducts.map((company) => (
-                  <Marker
-                    key={company.id}
-                    position={[company.lat, company.lng]}
-                    icon={customIcon}
-                    eventHandlers={{
-                      click: () => setSelectedCompany(company)
-                    }}
-                  >
-                    <Popup>
+                {companiesWithProducts
+                  .filter((company) => company.lat != null && company.lng != null)
+                  .map((company) => (
+                    <Marker
+                      key={company.id}
+                      position={[company.lat, company.lng]}
+                      icon={customIcon}
+                      eventHandlers={{
+                        click: () => setSelectedCompany(company)
+                      }}
+                    >
+                      <Popup>
                       <div className="p-2">
                         <h3 className="font-semibold text-slate-900">{company.name}</h3>
                         <p className="text-sm text-slate-600 mt-1">{company.address}</p>
@@ -177,20 +191,24 @@ export default function LocationsPage() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-500">
                           <Navigation className="h-4 w-4" />
-                          <span>{company.lat.toFixed(4)}, {company.lng.toFixed(4)}</span>
+                          <span>{company.lat != null && company.lng != null ? `${company.lat.toFixed(4)}, ${company.lng.toFixed(4)}` : 'Coordinates unavailable'}</span>
                         </div>
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {company.tags.map((tag) => (
-                          <Link
-                            key={tag}
-                            to={`/shop?query=${encodeURIComponent(tag)}&company=${encodeURIComponent(company.name)}`}
-                            className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
-                          >
-                            #{tag}
-                          </Link>
-                        ))}
+                        {company.tags.length > 0 ? (
+                          company.tags.map((tag) => (
+                            <Link
+                              key={tag}
+                              to={`/shop?query=${encodeURIComponent(tag)}&company=${encodeURIComponent(company.name)}`}
+                              className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                            >
+                              #{tag}
+                            </Link>
+                          ))
+                        ) : (
+                          <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">No tags</span>
+                        )}
                       </div>
                     </div>
 

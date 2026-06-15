@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Search, TrendingUp } from 'lucide-react';
+import { Search, TrendingUp, ArrowLeft } from 'lucide-react';
 
 export default function WeatherPage() {
   const [weatherData, setWeatherData] = useState(null);
@@ -232,6 +232,10 @@ export default function WeatherPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-4xl px-6 py-12">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Weather Information</h1>
           <p className="mt-2 text-slate-600">Current weather and forecast for your location</p>

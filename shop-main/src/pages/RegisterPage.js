@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { ArrowLeft } from 'lucide-react';
 import { auth, db } from '../firebase/config';
 import { toast } from 'react-toastify';
 
@@ -35,28 +36,28 @@ export default function RegisterPage() {
     {
       id: 'mpesa',
       name: 'M-Pesa',
-      description: 'Pay via M-Pesa mobile money (Lesotho & South Africa)',
+      description: 'Pay via M-Pesa mobile wallet in Lesotho or South Africa',
       icon: '📱',
       countries: ['Lesotho', 'South Africa']
     },
     {
-      id: 'mokuru',
-      name: 'Mokuru',
-      description: 'Pay via Mokuru mobile wallet',
-      icon: '💳',
-      countries: ['Lesotho']
-    },
-    {
       id: 'ecocash',
       name: 'EcoCash',
-      description: 'Pay via EcoCash mobile money',
+      description: 'Pay via EcoCash mobile money in Lesotho & South Africa',
       icon: '📲',
       countries: ['Lesotho', 'South Africa']
     },
     {
-      id: 'bank',
-      name: 'Bank Transfer',
-      description: 'Direct bank transfer (All major banks in Lesotho & SA)',
+      id: 'fnb',
+      name: 'FNB Transfer',
+      description: 'Pay via FNB bank transfer in Lesotho or South Africa',
+      icon: '🏦',
+      countries: ['Lesotho', 'South Africa']
+    },
+    {
+      id: 'standard-bank',
+      name: 'Standard Bank Transfer',
+      description: 'Pay via Standard Bank transfer in Lesotho or South Africa',
       icon: '🏦',
       countries: ['Lesotho', 'South Africa']
     }
@@ -70,7 +71,7 @@ export default function RegisterPage() {
        await updateProfile(credential.user, { displayName: name });
        
        // Show immediate notification for account creation
-       toast.info('Firebase account created successfully!');
+       toast.info('Setting up your seller account...');
 
        const role = accountType === 'company' ? 'company-admin' : 'individual-seller';
 
@@ -90,16 +91,19 @@ export default function RegisterPage() {
        });
 
        if (accountType === 'company' || accountType === 'individual') {
-         // Show payment modal to complete registration
          setPendingUid(credential.user.uid);
-         setShowPaymentModal(true);
+         toast.success('✅ Account created! Next: complete your subscription payment to start selling.');
+         navigate('/');
          return;
        }
 
-        toast.success('Account created successfully.');
+        toast.success('✅ Account created successfully!');
         navigate('/');
      } catch (error) {
-       toast.error(error.message || 'Unable to create account.');
+       const friendlyMsg = error.code === 'auth/email-already-in-use' ? '📧 This email is already registered.'
+         : error.code === 'auth/weak-password' ? '🔐 Password must be at least 6 characters.'
+         : 'Account creation failed. Please try again.';
+       toast.error(friendlyMsg);
      } finally {
        setLoading(false);
      }
@@ -107,7 +111,7 @@ export default function RegisterPage() {
 
   const handleConfirmPayment = async () => {
     if (!pendingUid || !selectedPaymentMethod) {
-      toast.error('Please select a payment method.');
+      toast.error('💳 Please choose a payment method to complete registration.');
       return;
     }
 
@@ -131,12 +135,12 @@ export default function RegisterPage() {
         nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       }, { merge: true });
 
-toast.success(`Payment of ${fee.label} recorded. Registration complete! You can now list your products.`);
+toast.success(`✅ Payment received! You're all set to start selling.`);
        setShowPaymentModal(false);
        navigate('/');
     } catch (err) {
       console.error(err);
-      toast.error('Payment failed. Please try again.');
+      toast.error('Payment processing failed. Please try again.');
     } finally {
       setPaymentProcessing(false);
     }
@@ -144,7 +148,12 @@ toast.success(`Payment of ${fee.label} recorded. Registration complete! You can 
 
   return (
     <div className="min-h-screen bg-emerald-50/30 px-6 py-12">
-      <div className="mx-auto max-w-lg rounded-[2rem] bg-white p-10 shadow-card">
+      <div className="mx-auto max-w-lg">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
+        <div className="rounded-[2rem] bg-white p-10 shadow-card">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-semibold text-slate-900">🌿 Register as a Seller</h2>
           <p className="mt-3 text-slate-600">Join our horticulture marketplace and start selling your fresh produce.</p>
@@ -329,13 +338,13 @@ toast.success(`Payment of ${fee.label} recorded. Registration complete! You can 
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl">
                   <h4 className="text-sm font-semibold text-slate-700 mb-3">Payment Details</h4>
                   
-                  {(selectedPaymentMethod === 'mpesa' || selectedPaymentMethod === 'mokuru' || selectedPaymentMethod === 'ecocash') && (
+                  {(selectedPaymentMethod === 'mpesa' || selectedPaymentMethod === 'ecocash') && (
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Mobile Number</label>
                       <input
                         type="tel"
                         value={paymentDetails.phoneNumber}
-                        onChange={(e) => setPaymentDetails({...paymentDetails, phoneNumber: e.target.value})}
+                        onChange={(e) => setPaymentDetails({ ...paymentDetails, phoneNumber: e.target.value })}
                         placeholder="e.g., +266 123 4567"
                         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3"
                       />
@@ -345,31 +354,14 @@ toast.success(`Payment of ${fee.label} recorded. Registration complete! You can 
                     </div>
                   )}
 
-                  {selectedPaymentMethod === 'bank' && (
+                  {(selectedPaymentMethod === 'fnb' || selectedPaymentMethod === 'standard-bank') && (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Bank Name</label>
-                        <select
-                          value={paymentDetails.bankName}
-                          onChange={(e) => setPaymentDetails({...paymentDetails, bankName: e.target.value})}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3"
-                        >
-                          <option value="">Select your bank</option>
-                          <option value="standard-bank-ls">Standard Bank Lesotho</option>
-                          <option value="nedbank-ls">Nedbank Lesotho</option>
-                          <option value="fbcl">First Bank of Lesotho</option>
-                          <option value="standard-bank-za">Standard Bank South Africa</option>
-                          <option value="absa">Absa Bank</option>
-                          <option value="capitec">Capitec Bank</option>
-                          <option value="other">Other Bank</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Account Number</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Bank Account Number</label>
                         <input
                           type="text"
                           value={paymentDetails.accountNumber}
-                          onChange={(e) => setPaymentDetails({...paymentDetails, accountNumber: e.target.value})}
+                          onChange={(e) => setPaymentDetails({ ...paymentDetails, accountNumber: e.target.value })}
                           placeholder="Enter your account number"
                           className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3"
                         />
@@ -378,7 +370,7 @@ toast.success(`Payment of ${fee.label} recorded. Registration complete! You can 
                         <p className="text-xs text-amber-800">
                           <strong>Bank Transfer Instructions:</strong><br/>
                           Transfer {accountType === 'company' ? 'M1,000.00' : 'M750.00'} to:<br/>
-                          Bank: Standard Bank Lesotho<br/>
+                          Bank: {selectedPaymentMethod === 'fnb' ? 'FNB' : 'Standard Bank'}<br/>
                           Account Name: Garden Shop Marketplace<br/>
                           Account Number: 3-4-5-6-7-8-9<br/>
                           Reference: {pendingUid?.slice(0, 8) || 'REG'}<br/><br/>
@@ -412,6 +404,7 @@ toast.success(`Payment of ${fee.label} recorded. Registration complete! You can 
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

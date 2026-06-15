@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Trash2, Eye, Play, Image as ImageIcon, FileText, Clock, AlertCircle, Upload } from 'react-feather';
+import { Check, X, Trash2, Eye, Play, Image as ImageIcon, FileText, Clock, AlertCircle, Upload, ArrowLeft, Plus } from 'react-feather';
 import { db, storage } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
+
+const TESTIMONIALS_STORAGE_KEY = 'shopAdminTestimonials';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-800 border-amber-200',
@@ -27,7 +31,21 @@ const typeIcons = {
 
 export default function TestimonialsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [testimonials, setTestimonials] = useState([]);
+  const [localTestimonials, setLocalTestimonials] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(TESTIMONIALS_STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.warn('Failed to parse saved testimonials:', error);
+        }
+      }
+    }
+    return [];
+  });
   const [filteredTestimonials, setFilteredTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -45,8 +63,16 @@ export default function TestimonialsPage() {
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const uploadFileInputRef = React.useRef(null);
 
   const isSuperAdmin = user?.role === 'super-admin';
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(TESTIMONIALS_STORAGE_KEY, JSON.stringify(localTestimonials));
+    }
+  }, [localTestimonials]);
 
   useEffect(() => {
     const testimonialsRef = collection(db, 'testimonials');
@@ -65,7 +91,7 @@ export default function TestimonialsPage() {
   }, []);
 
   useEffect(() => {
-    let result = [...testimonials];
+    let result = [...testimonials, ...localTestimonials];
 
     if (filter !== 'all') {
       result = result.filter((t) => t.status === filter);
@@ -76,7 +102,7 @@ export default function TestimonialsPage() {
     }
 
     setFilteredTestimonials(result);
-  }, [testimonials, filter, typeFilter]);
+  }, [testimonials, localTestimonials, filter, typeFilter]);
 
   const handleApprove = async (id) => {
     try {
@@ -108,8 +134,15 @@ export default function TestimonialsPage() {
     if (!window.confirm('Are you sure you want to delete this testimonial?')) return;
 
     try {
-      await deleteDoc(doc(db, 'testimonials', id));
-      toast.success('Testimonial deleted successfully');
+      // Check if it's a local testimonial
+      const isLocal = localTestimonials.some(t => t.id === id);
+      if (isLocal) {
+        setLocalTestimonials(prev => prev.filter(t => t.id !== id));
+        toast.success('Testimonial deleted successfully');
+      } else {
+        await deleteDoc(doc(db, 'testimonials', id));
+        toast.success('Testimonial deleted successfully');
+      }
     } catch (error) {
       console.error('Error deleting testimonial:', error);
       toast.error('Failed to delete testimonial');
@@ -166,29 +199,63 @@ export default function TestimonialsPage() {
     setAdding(true);
     try {
       let mediaUrl = '';
+      let mediaFileName = '';
+      
+      // Handle media file - convert to base64 for local storage
       if (mediaFile) {
-        const extension = mediaFile.name.split('.').pop();
-        const storageRef = ref(storage, `testimonials/${Date.now()}.${extension}`);
-        await uploadBytes(storageRef, mediaFile);
-        mediaUrl = await getDownloadURL(storageRef);
+        mediaFileName = mediaFile.name;
+        const reader = new FileReader();
+        await new Promise((resolve, reject) => {
+          reader.onload = () => {
+            mediaUrl = reader.result;
+            resolve();
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(mediaFile);
+        });
+        
+        // Try to upload to Firebase as well
+        try {
+          const extension = mediaFile.name.split('.').pop();
+          const storageRef = ref(storage, `testimonials/${Date.now()}.${extension}`);
+          await uploadBytes(storageRef, mediaFile);
+          mediaUrl = await getDownloadURL(storageRef);
+        } catch (firebaseError) {
+          console.warn('Firebase upload failed, using local storage:', firebaseError);
+        }
       }
-      await addDoc(collection(db, 'testimonials'), {
+
+      const newTestimonial = {
+        id: `local-${Date.now()}`,
         type: addForm.type,
         title: addForm.title,
         description: addForm.description,
         testimonialText: addForm.testimonialText,
         mediaUrl,
-        userId: user.uid,
-        userEmail: user.email || '',
-        userName: user.displayName || user.email || 'Super Admin',
+        mediaFileName,
+        userId: user?.uid || '',
+        userEmail: user?.email || '',
+        userName: user?.displayName || user?.email || 'Super Admin',
         status: 'approved',
-        createdAt: serverTimestamp(),
-      });
+        createdAt: new Date().toISOString(),
+      };
+
+      // Always save to local storage
+      setLocalTestimonials(prev => [newTestimonial, ...prev]);
+
+      // Try to save to Firebase as well
+      try {
+        await addDoc(collection(db, 'testimonials'), newTestimonial);
+      } catch (firebaseError) {
+        console.warn('Firebase save failed, testimonial saved locally:', firebaseError);
+      }
+
       toast.success('Testimonial added successfully');
       setAddForm({ type: 'text', title: '', description: '', testimonialText: '' });
       handleRemoveAddMedia();
       setShowAddForm(false);
     } catch (error) {
+      console.error('Error adding testimonial:', error);
       toast.error('Failed to add testimonial');
     } finally {
       setAdding(false);
@@ -196,10 +263,90 @@ export default function TestimonialsPage() {
   };
 
   const stats = {
-    total: testimonials.length,
-    pending: testimonials.filter((t) => t.status === 'pending').length,
-    approved: testimonials.filter((t) => t.status === 'approved').length,
-    rejected: testimonials.filter((t) => t.status === 'rejected').length,
+    total: testimonials.length + localTestimonials.length,
+    pending: [...testimonials, ...localTestimonials].filter((t) => t.status === 'pending').length,
+    approved: [...testimonials, ...localTestimonials].filter((t) => t.status === 'approved').length,
+    rejected: [...testimonials, ...localTestimonials].filter((t) => t.status === 'rejected').length,
+  };
+
+  
+  const handlePushToFirestore = async (testimonial) => {
+    if (!isSuperAdmin) return;
+    try {
+      toast.info('Saving testimonial to Firestore...');
+      const payload = { ...testimonial };
+      if (payload.id && String(payload.id).startsWith('local-')) delete payload.id;
+      payload.createdAt = serverTimestamp();
+      await addDoc(collection(db, 'testimonials'), payload);
+      if (testimonial.id && String(testimonial.id).startsWith('local-')) {
+        setLocalTestimonials(prev => prev.filter(t => t.id !== testimonial.id));
+      }
+      toast.success('Testimonial saved to Firestore');
+    } catch (error) {
+      console.error('Error saving testimonial to Firestore:', error);
+      toast.error('Failed to save testimonial to Firestore');
+    }
+  };
+
+  const saveSampleToFirestore = async (sample) => {
+    await handlePushToFirestore({ ...sample, userName: user?.displayName || user?.email || 'Admin', userEmail: user?.email || '' });
+  };
+
+  const handleUploadFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!isSuperAdmin) {
+      toast.error('Only super admins can upload testimonials');
+      return;
+    }
+    setUploading(true);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const testimonialsArray = Array.isArray(parsed) ? parsed : [parsed];
+      
+      if (!Array.isArray(testimonialsArray) || testimonialsArray.length === 0) {
+        toast.error('File must contain an array of testimonials');
+        setUploading(false);
+        return;
+      }
+
+      let imported = 0;
+      for (const t of testimonialsArray) {
+        if (!t.title?.trim() || !t.testimonialText?.trim()) {
+          console.warn('Skipping testimonial without title or text:', t);
+          continue;
+        }
+        const newTestimonial = {
+          id: `local-${Date.now()}-${Math.random()}`,
+          type: t.type || 'text',
+          title: t.title,
+          description: t.description || '',
+          testimonialText: t.testimonialText,
+          mediaUrl: t.mediaUrl || '',
+          mediaFileName: t.mediaFileName || '',
+          userId: user?.uid || '',
+          userEmail: user?.email || '',
+          userName: t.userName || user?.displayName || user?.email || 'Admin',
+          status: t.status || 'approved',
+          createdAt: new Date().toISOString(),
+        };
+        setLocalTestimonials(prev => [newTestimonial, ...prev]);
+        try {
+          await addDoc(collection(db, 'testimonials'), newTestimonial);
+        } catch (err) {
+          console.warn('Firebase save failed for one testimonial:', err);
+        }
+        imported++;
+      }
+      toast.success(`Imported ${imported} testimonial${imported !== 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Error uploading testimonials:', error);
+      toast.error('Failed to upload testimonials. Ensure file is valid JSON.');
+    } finally {
+      setUploading(false);
+      if (uploadFileInputRef.current) uploadFileInputRef.current.value = '';
+    }
   };
 
   if (loading) {
@@ -212,11 +359,45 @@ export default function TestimonialsPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-slate-900">Testimonials</h1>
-        <p className="mt-2 text-slate-600">
-          Review and manage customer and company testimonials for the app.
-        </p>
+      
+      {/* Header with Add Button */}
+      <div className="mb-8 rounded-[2rem] bg-white p-8 shadow-card">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-slate-900">Testimonials</h1>
+            <p className="mt-2 text-slate-600">Review and manage customer and company testimonials for the app.</p>
+          </div>
+          {user && (
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="inline-flex items-center gap-2 rounded-3xl bg-slate-900 px-6 py-3 text-white hover:bg-slate-800 whitespace-nowrap"
+              >
+                <Plus size={18} />
+                Add Testimonial
+              </button>
+              {isSuperAdmin && (
+                <>
+                  <button
+                    onClick={() => uploadFileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="inline-flex items-center gap-2 rounded-3xl bg-sky-600 px-6 py-3 text-white hover:bg-sky-700 whitespace-nowrap disabled:opacity-50"
+                  >
+                    <Upload size={18} />
+                    {uploading ? 'Uploading...' : 'Upload Testimonials'}
+                  </button>
+                  <input
+                    ref={uploadFileInputRef}
+                    type="file"
+                    accept=".json"
+                    hidden
+                    onChange={handleUploadFile}
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
@@ -278,18 +459,6 @@ export default function TestimonialsPage() {
           </div>
         </div>
       </div>
-
-      {/* Super Admin Add Testimonial */}
-      {isSuperAdmin && (
-        <div className="mb-6">
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-medium text-white hover:bg-slate-800"
-          >
-            {showAddForm ? 'Cancel' : '+ Add Testimonial'}
-          </button>
-        </div>
-      )}
 
       {showAddForm && isSuperAdmin && (
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6">
@@ -386,6 +555,16 @@ export default function TestimonialsPage() {
                 <span className="font-medium text-slate-900">Fresh Harvest Every Week</span><br />
                 The quality of produce here is exceptional! I've been ordering for my family every week and the vegetables are always fresh and tasty.
               </p>
+              {isSuperAdmin && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => saveSampleToFirestore({ type: 'text', title: 'Fresh Harvest Every Week', description: '', testimonialText: 'The quality of produce here is exceptional! I\'ve been ordering for my family every week and the vegetables are always fresh and tasty.' })}
+                    className="rounded-2xl bg-slate-900 px-4 py-2 text-white"
+                  >
+                    Save Sample
+                  </button>
+                </div>
+              )}
             </div>
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3">
@@ -403,6 +582,16 @@ export default function TestimonialsPage() {
               <div className="mt-4">
                 <img src="https://images.unsplash.com/photo-1416879840080-6f13b5ac3b68?w=500" alt="Garden" className="max-h-48 rounded-xl object-cover bg-slate-100" style={{ minHeight: '180px' }} />
               </div>
+              {isSuperAdmin && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => saveSampleToFirestore({ type: 'picture', title: 'Beautiful Garden Setup', description: '', testimonialText: 'Our backyard transformation was amazing! See the before and after photos.', mediaUrl: 'https://images.unsplash.com/photo-1416879840080-6f13b5ac3b68?w=500' })}
+                    className="rounded-2xl bg-slate-900 px-4 py-2 text-white"
+                  >
+                    Save Sample
+                  </button>
+                </div>
+              )}
             </div>
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3">
@@ -420,6 +609,16 @@ export default function TestimonialsPage() {
               <div className="mt-4">
                 <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" controls className="max-h-48 rounded-xl bg-slate-100" style={{ minHeight: '180px' }} />
               </div>
+              {isSuperAdmin && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => saveSampleToFirestore({ type: 'video', title: 'Customer Stories', description: '', testimonialText: 'Watch Maria\'s story about how our organic seeds helped her harvest the best tomatoes.', mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' })}
+                    className="rounded-2xl bg-slate-900 px-4 py-2 text-white"
+                  >
+                    Save Sample
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { Play, FileText, Image, X, Upload } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Play, FileText, Image, X, Upload, ArrowLeft } from 'lucide-react';
 
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -14,6 +15,7 @@ export default function TestimonialPage() {
   const { user } = useAuth();
   const profile = useSelector((state) => state.user.user) || {};
   const role = profile.role || 'customer';
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     type: 'text',
@@ -150,6 +152,10 @@ export default function TestimonialPage() {
     <div>
       <ShopHeader />
       <main className="mx-auto max-w-6xl px-6 py-12">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
         <div className="space-y-8">
           {isAdmin && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -296,31 +302,34 @@ export default function TestimonialPage() {
               </div>
             ) : (
               <div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
-                {filteredApproved.map((item) => (
-                  <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{item.title || item.userName || 'Anonymous'}</p>
-                        {item.description && <p className="text-xs text-slate-500">{item.description}</p>}
+                {filteredApproved.map((item) => {
+                  const itemType = item.type || 'text';
+                  return (
+                    <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{item.title || item.userName || 'Anonymous'}</p>
+                          {item.description && <p className="text-xs text-slate-500">{item.description}</p>}
+                        </div>
+                        <span className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 capitalize">{itemType}</span>
                       </div>
-                      <span className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 capitalize">{item.type}</span>
-                    </div>
 
-                    <p className="mt-3 text-sm leading-relaxed text-slate-700">{item.testimonialText}</p>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-700">{item.testimonialText || ''}</p>
 
-                    {item.type === 'picture' && item.mediaUrl && (
-                      <div className="mt-4">
-                        <img src={item.mediaUrl} alt="Testimonial" className="max-h-56 w-full rounded-xl object-cover bg-slate-200" style={{ minHeight: '200px' }} />
-                      </div>
-                    )}
+                      {itemType === 'picture' && item.mediaUrl && (
+                        <div className="mt-4">
+                          <img src={item.mediaUrl} alt="Testimonial" className="max-h-56 w-full rounded-xl object-cover bg-slate-200" style={{ minHeight: '200px' }} />
+                        </div>
+                      )}
 
-                    {item.type === 'video' && item.mediaUrl && (
-                      <div className="mt-4">
-                        <video src={item.mediaUrl} controls className="max-h-56 w-full rounded-xl bg-slate-200" style={{ minHeight: '200px' }} />
-                      </div>
-                    )}
-                  </article>
-                ))}
+                      {itemType === 'video' && item.mediaUrl && (
+                        <div className="mt-4">
+                          <video src={item.mediaUrl} controls className="max-h-56 w-full rounded-xl bg-slate-200" style={{ minHeight: '200px' }} />
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
             )}
           </section>

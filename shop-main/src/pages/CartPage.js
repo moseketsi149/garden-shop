@@ -1,16 +1,23 @@
 import { useSelector, useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import ShopHeader from '../components/ShopHeader';
 import { removeFromCart, updateQuantity } from '../features/cart/cartSlice';
 
 export default function CartPage() {
   const cartItems = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const total = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   return (
     <div>
       <ShopHeader />
       <main className="mx-auto max-w-6xl px-6 py-12">
+        <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Go Back</span>
+        </button>
         <h2 className="text-3xl font-semibold text-slate-900">Your Cart</h2>
         <div className="mt-8 space-y-4">
           {cartItems.length === 0 ? (
@@ -59,7 +66,7 @@ export default function CartPage() {
               <p className="text-2xl font-bold text-slate-900">M{total.toFixed(2)}</p>
             </div>
             <div className="mt-6 flex gap-4">
-              <a href="/checkout" className="rounded-2xl bg-slate-900 px-6 py-3 text-white hover:bg-slate-800">Checkout</a>
+              <Link to="/checkout" className="rounded-2xl bg-slate-900 px-6 py-3 text-white hover:bg-slate-800">Checkout</Link>
             </div>
           </div>
         )}

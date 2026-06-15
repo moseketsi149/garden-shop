@@ -74,6 +74,16 @@ const sampleProducts = [
     image: 'https://tse2.mm.bing.net/th/id/OIP.rS-9eitV7kTv0jtchCN1TQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3',
     discount: 10,
   },
+  {
+    name: 'Fresh Strawberries',
+    company: 'Greenies Farm',
+    price: 55,
+    stock: 100,
+    category: 'fruits-vegetables',
+    tags: ['strawberries', 'fresh', 'fruits'],
+    image: 'https://blogchef.net/wp-content/uploads/2022/05/How-to-Cook-Fresh-Strawberries-2-scaled.jpg',
+    discount: 5,
+  },
 ];
 
 export const seedSampleProducts = async () => {
