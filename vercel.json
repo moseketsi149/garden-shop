@@ -7,10 +7,18 @@
       "config": {
         "distDir": "build"
       }
+    },
+    {
+      "src": "shopAdmin-main/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     }
   ],
-  "rewrites": [
-    { "source": "/admin(.*)", "destination": "/shopAdmin-main/$1" },
-    { "source": "/(.*)", "destination": "/shop-main/build/index.html" }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/admin(.*)", "dest": "/shopAdmin-main/index.html" },
+    { "src": "/(.*)", "dest": "/shop-main/build/index.html" }
   ]
 }

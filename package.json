@@ -1,4 +1,11 @@
 {
+  "name": "garden-shop-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix shop-main run build",
+    "start": "npm --prefix shop-main run start"
+  },
   "dependencies": {
     "autoprefixer": "^10.5.0",
     "framer-motion": "^12.40.0",
