@@ -469,19 +469,11 @@ export default function ShopPage() {
                      </button>
                    ))}
                  </div>
-               </div>
-               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                 <ProductCard product={{ id: 'example-1', name: 'Ripe Red Tomatoes', company: 'Fresh Farms', price: 25, stock: 100, image: 'https://images.unsplash.com/photo-1546094009-6a795c249319?w=400', tags: ['tomatoes', 'fresh'], description: 'Sun-ripened organic tomatoes, perfect for salads and cooking.', isNew: true }} />
-                 <ProductCard product={{ id: 'example-2', name: 'Crisp Carrots', company: 'Garden Fresh', price: 15, stock: 80, image: 'https://images.unsplash.com/photo-1598170843248-7c66c4c566a5?w=400', tags: ['carrots', 'organic'], description: 'Sweet and crunchy carrots, locally grown.' }} />
-                 <ProductCard product={{ id: 'example-3', name: 'Green Leafy Spinach', company: 'Harvest Co-op', price: 20, stock: 60, image: 'https://images.unsplash.com/photo-1576049221347-c8e6eef8e872?w=400', tags: ['spinach', 'leafy'], description: 'Nutrient-dense spinach leaves, great for smoothies.' }} />
-                 <ProductCard product={{ id: 'example-4', name: 'Yellow Bananas', company: 'Tropical Fruits', price: 18, stock: 150, image: 'https://images.unsplash.com/photo-1574226920512-2b4e3d8c1a94?w=400', tags: ['bananas', 'fruit'], description: 'Sweet ripe bananas, perfect for snacking.' }} />
-                 <ProductCard product={{ id: 'example-5', name: 'Red Apples', company: 'Orchard Direct', price: 30, stock: 90, image: 'https://images.unsplash.com/photo-1567306226463-70e4e4655dae?w=400', tags: ['apples', 'fruit'], description: 'Crisp apples from local orchards.' }} />
-                 <ProductCard product={{ id: 'example-6', name: 'Bell Peppers Mix', company: 'Colorful Veggies', price: 35, stock: 70, image: 'https://images.unsplash.com/photo-1551288043-6941f33c5e42?w=400', tags: ['peppers', 'colorful'], description: 'Colorful bell peppers - red, yellow, and green.', discount: 10 }} />
-               </div>
-             </div>
-           )}
-         </div>
-       </main>
-     </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
    );
 }

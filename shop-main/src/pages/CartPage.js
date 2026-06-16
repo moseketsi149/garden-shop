@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import ShopHeader from '../components/ShopHeader';
+import { ProductImage } from '../components/ProductCard';
 import { removeFromCart, updateQuantity } from '../features/cart/cartSlice';
 
 export default function CartPage() {
@@ -27,7 +28,7 @@ export default function CartPage() {
               <div key={item.product.id} className="rounded-3xl bg-white p-6 shadow-card">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <img src={item.product.image} alt={item.product.name} className="h-24 w-24 rounded-3xl object-cover" />
+                    <ProductImage src={item.product.image} alt={item.product.name} size="small" />
                     <div>
                       <p className="text-lg font-semibold text-slate-900">{item.product.name}</p>
                       <p className="text-sm text-slate-600">M{item.product.price.toFixed(2)} each</p>

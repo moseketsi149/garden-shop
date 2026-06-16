@@ -5,6 +5,7 @@ import { addToCart } from '../features/cart/cartSlice';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import ShopHeader from '../components/ShopHeader';
+import { ProductImage } from '../components/ProductCard';
 
 export default function ProductPage() {
   const { id } = useParams();
@@ -47,7 +48,7 @@ export default function ProductPage() {
           <span className="text-sm font-medium">Go Back</span>
         </button>
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-          <img src={product.image} alt={product.name} className="rounded-[2rem] object-cover" />
+          <ProductImage src={product.image} alt={product.name} />
           <div className="space-y-6">
             <div>
               <p className="text-sm text-slate-500">{product.company}</p>

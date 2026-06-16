@@ -1,19 +1,57 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, AlertTriangle } from 'lucide-react';
+
+const unstableImageMarkers = [
+  'picsum.photos',
+  'images.unsplash.com',
+  'source.unsplash.com',
+  'tse',
+  'bing.net/th',
+  'random',
+  'loremflickr',
+];
+
+const isStableProductImage = (src) => {
+  if (!src || typeof src !== 'string') return false;
+  const normalized = src.trim().toLowerCase();
+  if (!normalized.startsWith('http')) return false;
+  return !unstableImageMarkers.some((marker) => normalized.includes(marker));
+};
+
+export const ProductImage = ({ src, alt, size = 'large', className = '' }) => {
+  const [failed, setFailed] = useState(false);
+  const initial = alt ? alt.trim().charAt(0).toUpperCase() : '?';
+  const sizeClasses = size === 'small'
+    ? 'h-24 w-24 rounded-3xl'
+    : size === 'card'
+      ? 'h-48 w-full rounded-2xl'
+      : 'rounded-[2rem]';
+
+  if (failed || !isStableProductImage(src)) {
+    return (
+      <div className={`${sizeClasses} ${className} flex items-center justify-center bg-emerald-50 text-3xl font-semibold text-emerald-800`}>
+        {initial}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`${sizeClasses} ${className} object-cover bg-slate-200`}
+      loading={size === 'card' ? 'lazy' : undefined}
+      onError={() => setFailed(true)}
+    />
+  );
+};
 
 export default function ProductCard({ product, onTagClick }) {
    return (
     <div className="rounded-3xl bg-white p-5 shadow-card hover:-translate-y-1 hover:shadow-xl transition min-w-0">
       <Link to={`/product/${product.id}`}>
-<img
-  src={product.image || 'https://blogchef.net/wp-content/uploads/2022/05/How-to-Cook-Fresh-Carrots-2-scaled.jpg'}
-  alt={product.name}
-  className="h-48 w-full rounded-2xl object-cover bg-slate-200"
-  loading="lazy"
-  onError={(e) => {
-    e.target.src = "https://picsum.photos/400/300";
-  }}
-/>
+        <ProductImage src={product.image} alt={product.name} size="card" />
       </Link>
       {(product.isNew || product.discount || product.package) && (
         <div className="mt-4 flex flex-wrap gap-2">

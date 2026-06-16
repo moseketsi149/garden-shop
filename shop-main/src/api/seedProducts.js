@@ -3,14 +3,8 @@ import {
   addDoc,
   serverTimestamp,
   getDocs,
-  query,
-  where,
-  doc,
-  updateDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
-
-const STRAWBERRIES_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Strawberries.jpg/960px-Strawberries.jpg?_=20100120091000';
 
 const sampleProducts = [
   {
@@ -20,7 +14,7 @@ const sampleProducts = [
     stock: 120,
     category: 'fruits-vegetables',
     tags: ['tomatoes', 'fresh', 'vegetables'],
-    image: 'https://tse4.mm.bing.net/th/id/OIP.Lr-XI7VDUrD9o3oZ0G_WYgHaE6?w=900&h=598&rs=1&pid=ImgDetMain&o=7&rm=3',
+    image: null,
     isNew: true,
   },
   {
@@ -30,7 +24,7 @@ const sampleProducts = [
     stock: 90,
     category: 'fruits-vegetables',
     tags: ['carrots', 'fresh', 'vegetables'],
-    image: 'https://blogchef.net/wp-content/uploads/2022/05/How-to-Cook-Fresh-Carrots-2-scaled.jpg',
+    image: null,
     discount: 5,
   },
   {
@@ -40,7 +34,7 @@ const sampleProducts = [
     stock: 60,
     category: 'fruits-vegetables',
     tags: ['salad', 'greens', 'fresh'],
-    image: 'https://c8.alamy.com/comp/2BX7TWH/salad-in-white-bowl-mixed-greens-with-black-olives-tomatoes-and-lots-of-vegetables-2BX7TWH.jpg',
+    image: null,
     isNew: true,
   },
   {
@@ -50,7 +44,7 @@ const sampleProducts = [
     stock: 200,
     category: 'processing',
     tags: ['dried', 'mango', 'snack'],
-    image: 'https://tse3.mm.bing.net/th/id/OIP.uEcs2IyMzTUxfyV-UvBXjwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3',
+    image: null,
   },
   {
     name: 'Canned Tomato Sauce',
@@ -59,7 +53,7 @@ const sampleProducts = [
     stock: 150,
     category: 'processing',
     tags: ['canned', 'sauce', 'tomatoes'],
-    image: 'https://tse4.mm.bing.net/th/id/OIP.blm9p4Z5NYW0ALMsPopVPAHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
+    image: null,
   },
   {
     name: 'Organic Fertilizer',
@@ -68,7 +62,7 @@ const sampleProducts = [
     stock: 150,
     category: 'nutrition',
     tags: ['fertilizer', 'organic', 'soil'],
-    image: 'https://cdn.cdnparenting.com/articles/2021/07/16191322/380433403.jpg',
+    image: null,
   },
   {
     name: 'Plant Nutrition Pack',
@@ -77,7 +71,7 @@ const sampleProducts = [
     stock: 80,
     category: 'nutrition',
     tags: ['nutrients', 'plant', 'care'],
-    image: 'https://tse2.mm.bing.net/th/id/OIP.rS-9eitV7kTv0jtchCN1TQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3',
+    image: null,
     discount: 10,
   },
   {
@@ -87,29 +81,10 @@ const sampleProducts = [
     stock: 100,
     category: 'fruits-vegetables',
     tags: ['strawberries', 'fresh', 'fruits'],
-    image: STRAWBERRIES_IMAGE,
+    image: null,
     discount: 5,
   },
 ];
-
-const ensureStrawberriesImage = async () => {
-  try {
-    const productsRef = collection(db, 'products');
-    const existingStrawberries = await getDocs(
-      query(productsRef, where('name', '==', 'Fresh Strawberries'))
-    );
-
-    await Promise.all(
-      existingStrawberries.docs.map((productDoc) =>
-        updateDoc(doc(db, 'products', productDoc.id), {
-          image: STRAWBERRIES_IMAGE,
-        })
-      )
-    );
-  } catch (error) {
-    console.warn('Could not refresh strawberries image:', error);
-  }
-};
 
 export const seedSampleProducts = async () => {
   try {
@@ -120,7 +95,6 @@ export const seedSampleProducts = async () => {
 
     if (!existingProducts.empty) {
       console.log('Products already exist. Skipping seed.');
-      await ensureStrawberriesImage();
       return;
     }
 

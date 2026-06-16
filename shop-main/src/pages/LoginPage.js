@@ -76,7 +76,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
-      toast.success(accountType === 'company' ? '👋 Welcome back! Your company dashboard is ready.' : '👋 Welcome back! Start shopping now.');
+      toast.success('Welcome to the marketplace!');
       navigate(getRedirectPath(), { replace: true });
       validateLoginAsync(result.user);
     } catch (error) {
@@ -93,7 +93,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
-      toast.success(accountType === 'company' ? '👋 Welcome! Your company dashboard is ready.' : '👋 Welcome! Start shopping now.');
+      toast.success('Welcome to the marketplace!');
       navigate(getRedirectPath(), { replace: true });
       validateLoginAsync(result.user);
     } catch (error) {
