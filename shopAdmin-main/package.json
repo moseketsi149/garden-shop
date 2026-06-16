@@ -2,6 +2,7 @@
   "name": "shopAdmin-main",
   "version": "1.0.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "autoprefixer": "^10.4.20",
     "firebase": "^10.10.0",
