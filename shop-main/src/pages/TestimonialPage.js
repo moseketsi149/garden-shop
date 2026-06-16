@@ -250,7 +250,6 @@ export default function TestimonialPage() {
               <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">Loading testimonials...</div>
             ) : filteredApproved.length === 0 ? (
               <div className="space-y-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">No approved testimonials yet.</div>
                 <div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
                   <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="flex items-center justify-between">
