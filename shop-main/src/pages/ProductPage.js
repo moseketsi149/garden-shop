@@ -48,7 +48,7 @@ export default function ProductPage() {
           <span className="text-sm font-medium">Go Back</span>
         </button>
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-          <ProductImage src={product.image} alt={product.name} />
+          <ProductImage src={product.image} alt={product.name} product={product} />
           <div className="space-y-6">
             <div>
               <p className="text-sm text-slate-500">{product.company}</p>

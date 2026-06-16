@@ -28,7 +28,7 @@ export default function CartPage() {
               <div key={item.product.id} className="rounded-3xl bg-white p-6 shadow-card">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <ProductImage src={item.product.image} alt={item.product.name} size="small" />
+                    <ProductImage src={item.product.image} alt={item.product.name} size="small" product={item.product} />
                     <div>
                       <p className="text-lg font-semibold text-slate-900">{item.product.name}</p>
                       <p className="text-sm text-slate-600">M{item.product.price.toFixed(2)} each</p>
