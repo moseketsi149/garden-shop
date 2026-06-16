@@ -3,7 +3,14 @@
   "builds": [
     {
       "src": "shop-main/package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     }
+  ],
+  "rewrites": [
+    { "source": "/admin(.*)", "destination": "/shopAdmin-main/$1" },
+    { "source": "/(.*)", "destination": "/shop-main/build/index.html" }
   ]
 }

@@ -3,8 +3,14 @@ import {
   addDoc,
   serverTimestamp,
   getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+
+const STRAWBERRIES_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Strawberries.jpg/960px-Strawberries.jpg?_=20100120091000';
 
 const sampleProducts = [
   {
@@ -81,10 +87,29 @@ const sampleProducts = [
     stock: 100,
     category: 'fruits-vegetables',
     tags: ['strawberries', 'fresh', 'fruits'],
-    image: 'https://blogchef.net/wp-content/uploads/2022/05/How-to-Cook-Fresh-Strawberries-2-scaled.jpg',
+    image: STRAWBERRIES_IMAGE,
     discount: 5,
   },
 ];
+
+const ensureStrawberriesImage = async () => {
+  try {
+    const productsRef = collection(db, 'products');
+    const existingStrawberries = await getDocs(
+      query(productsRef, where('name', '==', 'Fresh Strawberries'))
+    );
+
+    await Promise.all(
+      existingStrawberries.docs.map((productDoc) =>
+        updateDoc(doc(db, 'products', productDoc.id), {
+          image: STRAWBERRIES_IMAGE,
+        })
+      )
+    );
+  } catch (error) {
+    console.warn('Could not refresh strawberries image:', error);
+  }
+};
 
 export const seedSampleProducts = async () => {
   try {
@@ -95,6 +120,7 @@ export const seedSampleProducts = async () => {
 
     if (!existingProducts.empty) {
       console.log('Products already exist. Skipping seed.');
+      await ensureStrawberriesImage();
       return;
     }
 
