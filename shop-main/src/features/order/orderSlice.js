@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
 let unsubscribeProducts = null;
@@ -7,7 +7,7 @@ let unsubscribeProducts = null;
 export const startProductsListener = () => (dispatch) => {
   if (unsubscribeProducts) return;
 
-  const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+  const q = collection(db, 'products');
 
   unsubscribeProducts = onSnapshot(
     q,

@@ -35,14 +35,14 @@ export default function ShopPage() {
 
   const categorizeProduct = (product) => {
     const text = `${product.name || ''} ${product.tags?.join(' ') || ''} ${product.company || ''}`.toLowerCase();
-    if (['tomatoes', 'carrots', 'salad', 'greens', 'vegetables', 'fruits', 'organic', 'fresh', 'herbs', 'produce'].some((word) => text.includes(word))) {
-      return 'fruits-vegetables';
-    }
     if (['pack', 'dried', 'canned', 'preserved', 'juice', 'sauce', 'processing', 'packaged'].some((word) => text.includes(word))) {
       return 'processing';
     }
-    if (['fertilizer', 'nutrients', 'supplements', 'organic', 'soil', 'nutrition', 'plant', 'care'].some((word) => text.includes(word))) {
+    if (['fertilizer', 'nutrients', 'supplements', 'soil', 'nutrition', 'plant', 'care'].some((word) => text.includes(word))) {
       return 'nutrition';
+    }
+    if (['tomatoes', 'carrots', 'salad', 'greens', 'vegetables', 'fruits', 'organic', 'fresh', 'herbs', 'produce'].some((word) => text.includes(word))) {
+      return 'fruits-vegetables';
     }
     return 'fruits-vegetables';
   };

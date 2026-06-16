@@ -1,13 +1,45 @@
 import {
   collection,
   addDoc,
+  serverTimestamp,
   getDocs,
   query,
   where,
-  serverTimestamp,
+  doc,
+  updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
+/**
+ * Stable product images (use only reliable URLs)
+ */
+const productImageUrls = {
+  driedMango:
+    'https://tse1.mm.bing.net/th/id/OIP.dN_LpFidwiVxOr8n4tOnWQHaHS?rs=1&pid=ImgDetMain&o=7&rm=3',
+  nutritionPack:
+    'https://tse2.mm.bing.net/th/id/OIP.rS-9eitV7kTv0jtchCN1TQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3',
+  tomatoSauce:
+    'https://therootedfarmhouse.com/wp-content/uploads/2023/10/Easy-Tomatoes-Sauce-Recipe-The-Best-Tomatoes-for-Canning-4-682x1024.webp',
+  tomatoes:
+    'https://minnetonkaorchards.com/wp-content/uploads/2022/06/Ind-2.jpg',
+  organicFertilizer:
+    'https://tse1.explicit.bing.net/th/id/OIP.OAzeWGolsGkwjpIxdiKhoQHaFE?rs=1&pid=ImgDetMain&o=7&rm=3',
+   FreshApples:
+    'https://thumbs.dreamstime.com/z/fresh-apples-26723823.jpg',
+    FreshStrawberries:
+    'https://sagealphagal.com/wp-content/uploads/2024/05/Bowls-of-Fresh-Strawberries-YayImages.jpg',
+  MixedSaladGreens:
+    'https://www.homemadeinterest.com/wp-content/uploads/2023/03/Mixed-Green-Salad_2.jpg',
+  CarrotBundle:
+    'https://tse4.mm.bing.net/th/id/OIP.7D_cxvMc0lRrVT7i9QCTpAHaFW?w=1600&h=1157&rs=1&pid=ImgDetMain&o=7&rm=3',
+  CannedTomatoSauce:
+    'https://tse4.mm.bing.net/th/id/OIP.blm9p4Z5NYW0ALMsPopVPAHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
+};
+
+/**
+ * Sample products (ADD NEW PRODUCTS HERE)
+ */
 const sampleProducts = [
   {
     name: 'Fresh Tomatoes',
@@ -16,7 +48,7 @@ const sampleProducts = [
     stock: 120,
     category: 'fruits-vegetables',
     tags: ['tomatoes', 'fresh', 'vegetables'],
-    image: 'https://minnetonkaorchards.com/wp-content/uploads/2022/06/Ind-2.jpg',
+    image: productImageUrls.tomatoes,
     isNew: true,
   },
   {
@@ -26,65 +58,159 @@ const sampleProducts = [
     stock: 90,
     category: 'fruits-vegetables',
     tags: ['carrots', 'fresh', 'vegetables'],
-    image: 'https://images.unsplash.com/photo-1447175008436-1701707537c8',
+    image: productImageUrls.CarrotBundle, // replace if you add carrot image
     discount: 5,
   },
   {
-    name: 'Fresh Strawberries',
-    company: 'Greenies Farm',
-    price: 55,
-    stock: 100,
+    name: 'Mixed Salad Greens',
+    company: 'Wonder Farm',
+    price: 22,
+    stock: 60,
     category: 'fruits-vegetables',
-    tags: ['strawberries', 'fresh', 'fruit'],
-    image: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6',
-    discount: 5,
+    tags: ['salad', 'greens', 'fresh'],
+    image: productImageUrls.MixedSaladGreens,
+    isNew: true,
+  },
+  {
+    name: 'Dried Mango Slices',
+    company: 'Trader',
+    price: 45,
+    stock: 200,
+    category: 'processing',
+    tags: ['dried', 'mango', 'snack'],
+    image: productImageUrls.driedMango,
+  },
+  {
+    name: 'Canned Tomato Sauce',
+    company: 'Trader',
+    price: 28,
+    stock: 150,
+    category: 'processing',
+    tags: ['canned', 'sauce', 'tomatoes'],
+    image: productImageUrls.CannedTomatoSauce,
+  },
+  {
+    name: 'Organic Fertilizer',
+    company: 'The Roots Teams',
+    price: 25,
+    stock: 150,
+    category: 'nutrition',
+    tags: ['fertilizer', 'organic', 'soil'],
+    image: productImageUrls.OrganicFertilizer,
   },
   {
     name: 'Plant Nutrition Pack',
-    company: 'The Roots Team',
+    company: 'The Roots Teams',
     price: 60,
     stock: 80,
     category: 'nutrition',
     tags: ['nutrients', 'plant', 'care'],
-    image: 'https://example.com/nutrition-pack.jpg',
+    image: productImageUrls.nutritionPack,
     discount: 10,
   },
-
-  // ADD NEW PRODUCTS HERE
+  {
+    name: 'Fresh Strawberries',
+    company: 'Wonder Farm',
+    price: 22,
+    stock: 60,
+    category: 'fruits-vegetables',
+    tags: ['salad', 'greens', 'fresh'],
+    image: productImageUrls.FreshStrawberries,
+    isNew: true,
+  },
   {
     name: 'Fresh Apples',
-    company: 'Mountain Farms',
-    price: 25,
-    stock: 75,
+    company: 'Wonder Farm',
+    price: 22,
+    stock: 60,
     category: 'fruits-vegetables',
-    tags: ['apples', 'fruit', 'fresh'],
-    image: 'https://example.com/apples.jpg',
+    tags: ['salad', 'greens', 'fresh'],
+    image: productImageUrls.FreshApples,
     isNew: true,
   },
 ];
 
+/**
+ * Update images for existing products
+ */
+const ensureStableSampleProducts = async () => {
+  try {
+    const productsRef = collection(db, 'products');
+    const allProducts = await getDocs(productsRef);
+
+    const missingTimestampDocs = allProducts.docs.filter((docSnap) => !docSnap.data().createdAt);
+    if (missingTimestampDocs.length > 0) {
+      const batch = writeBatch(db);
+      missingTimestampDocs.forEach((docSnap) => {
+        batch.update(doc(db, 'products', docSnap.id), {
+          createdAt: serverTimestamp(),
+        });
+      });
+      await batch.commit();
+    }
+
+    await Promise.all(
+      sampleProducts.map(async (product) => {
+        const snapshot = await getDocs(
+          query(productsRef, where('name', '==', product.name))
+        );
+
+        if (snapshot.empty) {
+          await addDoc(productsRef, {
+            ...product,
+            createdAt: serverTimestamp(),
+          });
+          return;
+        }
+
+        await Promise.all(
+          snapshot.docs.map((docSnap) => {
+            const data = docSnap.data();
+            const payload = {
+              image: product.image,
+              updatedAt: serverTimestamp(),
+            };
+
+            if (!data.createdAt) {
+              payload.createdAt = serverTimestamp();
+            }
+
+            return updateDoc(doc(db, 'products', docSnap.id), payload);
+          })
+        );
+      })
+    );
+  } catch (error) {
+    console.warn('Product refresh failed:', error);
+  }
+};
+
+/**
+ * Seed products into Firestore
+ */
 export const seedSampleProducts = async () => {
   try {
     const productsRef = collection(db, 'products');
+    const existingProducts = await getDocs(productsRef);
 
-    for (const product of sampleProducts) {
-      const existing = await getDocs(
-        query(productsRef, where('name', '==', product.name))
-      );
-
-      if (existing.empty) {
-        await addDoc(productsRef, {
-          ...product,
-          createdAt: serverTimestamp(),
-        });
-
-        console.log(`Added: ${product.name}`);
-      } else {
-        console.log(`Already exists: ${product.name}`);
-      }
+    // If products exist → only refresh images
+    if (!existingProducts.empty) {
+      console.log('Products exist → refreshing sample products and timestamps');
+      await ensureStableSampleProducts();
+      return;
     }
 
-    console.log('Product seeding completed.');
+    // Otherwise seed products
+    await Promise.all(
+      sampleProducts.map((product) =>
+        addDoc(productsRef, {
+          ...product,
+          createdAt: serverTimestamp(),
+        })
+      )
+    );
+
+    console.log('Sample products seeded successfully');
   } catch (error) {
     console.error('Error seeding products:', error);
   }

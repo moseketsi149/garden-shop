@@ -3,75 +3,134 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, AlertTriangle } from 'lucide-react';
 
 /**
- * Simple fallback image if product image fails
+ * Allowed stable images (optional safety layer)
  */
-const fallbackImage =
-  'https://via.placeholder.com/600x400.png?text=Product+Image';
+const allowedProductImageUrls = [
+  'https://tse1.mm.bing.net/th/id/OIP.dN_LpFidwiVxOr8n4tOnWQHaHS?rs=1&pid=ImgDetMain&o=7&rm=3',
+  'https://tse2.mm.bing.net/th/id/OIP.rS-9eitV7kTv0jtchCN1TQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3',
+  'https://therootedfarmhouse.com/wp-content/uploads/2023/10/Easy-Tomatoes-Sauce-Recipe-The-Best-Tomatoes-for-Canning-4-682x1024.webp',
+  'https://minnetonkaorchards.com/wp-content/uploads/2022/06/Ind-2.jpg',
+];
+
+/**
+ * Fallback SVG generator
+ */
+const svgImage = (label) => {
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+      <rect width="800" height="600" fill="#e2e8f0"/>
+      <text x="400" y="300" text-anchor="middle"
+        font-size="40" fill="#334155">${label}</text>
+    </svg>
+  `)}`;
+};
+
+/**
+ * Image validator
+ */
+const isStableProductImage = (src) => {
+  if (!src || typeof src !== 'string') return false;
+
+  const normalized = src.trim().toLowerCase();
+
+  if (allowedProductImageUrls.includes(src)) return true;
+
+  if (
+    !normalized.startsWith('http') &&
+    !normalized.startsWith('data:image/') &&
+    !normalized.startsWith('/')
+  ) {
+    return false;
+  }
+
+  return true;
+};
 
 /**
  * Product Image Component
  */
-function ProductImage({ src, alt }) {
-  const [error, setError] = useState(false);
+export const ProductImage = ({
+  src,
+  alt,
+  size = 'large',
+  className = '',
+}) => {
+  const [failed, setFailed] = useState(false);
+
+  const imageSrc =
+    !failed && isStableProductImage(src)
+      ? src
+      : svgImage(alt || 'Product');
+
+  const sizeClasses =
+    size === 'card'
+      ? 'h-48 w-full rounded-2xl'
+      : 'h-24 w-24 rounded-3xl';
 
   return (
     <img
-      src={error || !src ? fallbackImage : src}
+      src={imageSrc}
       alt={alt}
-      className="h-48 w-full object-cover rounded-2xl bg-slate-200"
-      loading="lazy"
-      onError={() => setError(true)}
+      className={`${sizeClasses} ${className} object-cover bg-slate-200`}
+      onError={() => setFailed(true)}
+      loading={size === 'card' ? 'lazy' : undefined}
     />
   );
-}
+};
 
 /**
  * Product Card
  */
 export default function ProductCard({ product, onTagClick }) {
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-md hover:shadow-xl transition">
-      
+    <div className="rounded-3xl bg-white p-5 shadow-card hover:-translate-y-1 hover:shadow-xl transition">
+
       {/* Image */}
       <Link to={`/product/${product.id}`}>
-        <ProductImage src={product.image} alt={product.name} />
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          size="card"
+        />
       </Link>
 
       {/* Badges */}
       {(product.isNew || product.discount || product.package) && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           {product.isNew && (
-            <span className="badge bg-green-100 text-green-700">New</span>
+            <span className="badge bg-emerald-100 text-emerald-700">
+              New
+            </span>
           )}
 
           {product.discount && (
-            <span className="badge bg-red-100 text-red-700">
+            <span className="badge bg-rose-100 text-rose-700">
               -{product.discount}%
             </span>
           )}
 
           {product.package && (
-            <span className="badge bg-blue-100 text-blue-700">
+            <span className="badge bg-sky-100 text-sky-700">
               Package
             </span>
           )}
         </div>
       )}
 
-      {/* Title + Price */}
-      <div className="mt-4 flex justify-between items-start">
+      {/* Title + price */}
+      <div className="mt-4 flex justify-between">
         <div>
           <h3 className="text-lg font-semibold">{product.name}</h3>
           <p className="text-sm text-slate-500">{product.company}</p>
         </div>
 
-        <span className="text-lg font-bold">
+        <span className="font-bold">
           M{Number(product.price).toFixed(2)}
         </span>
       </div>
 
       {/* Stock */}
-      <div className="mt-3 flex justify-between items-center text-sm text-slate-600">
+      <div className="mt-3 flex justify-between text-sm text-slate-600">
         <span>{product.stock} in stock</span>
 
         {product.stock <= 5 && (
