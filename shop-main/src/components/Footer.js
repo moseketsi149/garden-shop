@@ -7,7 +7,7 @@ export default function Footer() {
           <p>Your one-stop shop for premium gardening supplies, plants, and horticulture tools.</p>
         </div>
         <div className="space-y-1">
-          <p>Built by Liana Rapapa Head digital Director at Development Solutions, Built with React, Tailwind, and Cloudflare-ready functions.</p>
+          <p>Built by Development Solutions, Built with React, Tailwind, and Cloudflare-ready functions.</p>
           <p className="text-xs text-slate-500">© {new Date().getFullYear()} Garden Shop. All rights reserved.</p>
         </div>
       </div>
