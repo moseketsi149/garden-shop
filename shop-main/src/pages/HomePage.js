@@ -18,7 +18,7 @@ export default function HomePage() {
       >
         {displayName && (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-            <p className="text-sm font-medium">Welcome back, <span className="font-semibold">{displayName}</span>.</p>
+            <p className="text-sm font-medium"> WELCOME TO GARNDEN SHOP, <span className="font-semibold">{displayName}</span>.</p>
             <p className="text-xs text-emerald-800/80">You’re signed in. Continue exploring the marketplace.</p>
           </div>
         )}
