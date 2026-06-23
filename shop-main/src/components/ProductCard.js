@@ -2,19 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, AlertTriangle } from 'lucide-react';
 
-/**
- * Allowed stable images (optional safety layer)
- */
-const allowedProductImageUrls = [
-  'https://tse1.mm.bing.net/th/id/OIP.dN_LpFidwiVxOr8n4tOnWQHaHS?rs=1&pid=ImgDetMain&o=7&rm=3',
-  'https://tse2.mm.bing.net/th/id/OIP.rS-9eitV7kTv0jtchCN1TQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3',
-  'https://therootedfarmhouse.com/wp-content/uploads/2023/10/Easy-Tomatoes-Sauce-Recipe-The-Best-Tomatoes-for-Canning-4-682x1024.webp',
-  'https://minnetonkaorchards.com/wp-content/uploads/2022/06/Ind-2.jpg',
-];
-
-/**
- * Fallback SVG generator
- */
 const svgImage = (label) => {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
@@ -25,42 +12,10 @@ const svgImage = (label) => {
   `)}`;
 };
 
-/**
- * Image validator
- */
-const isStableProductImage = (src) => {
-  if (!src || typeof src !== 'string') return false;
-
-  const normalized = src.trim().toLowerCase();
-
-  if (allowedProductImageUrls.includes(src)) return true;
-
-  if (
-    !normalized.startsWith('http') &&
-    !normalized.startsWith('data:image/') &&
-    !normalized.startsWith('/')
-  ) {
-    return false;
-  }
-
-  return true;
-};
-
-/**
- * Product Image Component
- */
-export const ProductImage = ({
-  src,
-  alt,
-  size = 'large',
-  className = '',
-}) => {
+export const ProductImage = ({ src, alt, size = 'large', className = '' }) => {
   const [failed, setFailed] = useState(false);
 
-  const imageSrc =
-    !failed && isStableProductImage(src)
-      ? src
-      : svgImage(alt || 'Product');
+  const imageSrc = !failed && src ? src : svgImage(alt || 'Product');
 
   const sizeClasses =
     size === 'card'
@@ -133,7 +88,7 @@ export default function ProductCard({ product, onTagClick }) {
       <div className="mt-3 flex justify-between text-sm text-slate-600">
         <span>{product.stock} in stock</span>
 
-        {product.stock <= 5 && (
+        {product.stock <= 100 && (
           <span className="flex items-center gap-1 text-amber-700 bg-amber-100 px-2 py-1 rounded-full">
             <AlertTriangle size={14} />
             Low stock

@@ -1,31 +1,34 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
 let unsubscribeProducts = null;
 
-export const startProductsListener = () => (dispatch) => {
+export const startProductsListener = () => async (dispatch) => {
   if (unsubscribeProducts) return;
 
-  const q = collection(db, 'products');
+  dispatch(setProductsLoading(true));
+  dispatch(setProductsError(null));
 
-  unsubscribeProducts = onSnapshot(
-    q,
-    (snapshot) => {
-      const products = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-      dispatch(setProducts(products));
-    },
-    (error) => {
-      dispatch(setProductsError(error?.message || 'Failed to sync products'));
-    }
-  );
+  try {
+    const q = collection(db, 'products');
 
-  return () => {
-    if (unsubscribeProducts) {
-      unsubscribeProducts();
-      unsubscribeProducts = null;
-    }
-  };
+    unsubscribeProducts = onSnapshot(
+      q,
+      (snapshot) => {
+        const products = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        dispatch(setProducts(products));
+        dispatch(setProductsLoading(false));
+      },
+      (error) => {
+        dispatch(setProductsError(error?.message || 'Failed to sync products'));
+        dispatch(setProductsLoading(false));
+      }
+    );
+  } catch (error) {
+    dispatch(setProductsError(error?.message || 'Failed to start products listener'));
+    dispatch(setProductsLoading(false));
+  }
 };
 
 export const stopProductsListener = () => () => {
@@ -93,6 +96,9 @@ const orderSlice = createSlice({
     setProducts(state, action) {
       state.products = action.payload;
     },
+    setProductsLoading(state, action) {
+      state.loading = action.payload;
+    },
     setProductsError(state, action) {
       state.error = action.payload;
     },
@@ -131,5 +137,5 @@ const orderSlice = createSlice({
   },
 });
 
-export const { setProducts, setProductsError, createOrder } = orderSlice.actions;
+export const { setProducts, setProductsLoading, setProductsError, createOrder } = orderSlice.actions;
 export default orderSlice.reducer;

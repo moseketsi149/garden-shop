@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,25 +20,58 @@ import PrivateRoute from './components/PrivateRoute';
 import Footer from './components/Footer';
 import BackButton from './components/BackButton';
 import { AuthProvider } from './context/AuthContext';
-import { startProductsListener } from './features/order/orderSlice';
-import { startLocationsListener as startLocationsListenerAction } from './features/locations/locationsSlice';
+import { startProductsListener, stopProductsListener } from './features/order/orderSlice';
+import { startLocationsListener, stopLocationsListener } from './features/locations/locationsSlice';
 import { seedSampleProducts } from './api/seedProducts';
 
 function App() {
   const dispatch = useDispatch();
-  const startedRef = useRef(false);
+  const [initError, setInitError] = useState(null);
 
   useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-    try {
-      dispatch(startProductsListener());
-      dispatch(startLocationsListenerAction());
-      seedSampleProducts();
-    } catch (error) {
-      console.error('Failed to start app:', error);
-    }
+    let cancelled = false;
+
+    const init = async () => {
+      try {
+        await seedSampleProducts();
+        if (cancelled) return;
+        dispatch(startProductsListener());
+        dispatch(startLocationsListener());
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Failed to start app:', error);
+          setInitError(error?.message || 'Failed to initialize app');
+        }
+      }
+    };
+
+    init();
+
+    return () => {
+      cancelled = true;
+      dispatch(stopProductsListener());
+      dispatch(stopLocationsListener());
+    };
   }, [dispatch]);
+
+  if (initError) {
+    return (
+      <AuthProvider>
+        <div className="min-h-screen bg-sky-50/30 text-slate-900 flex items-center justify-center">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 max-w-md">
+            <h2 className="text-lg font-semibold text-red-900">Initialization Error</h2>
+            <p className="mt-2 text-sm text-red-700">{initError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-full bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </AuthProvider>
+    );
+  }
 
   return (
     <AuthProvider>
@@ -50,7 +83,7 @@ function App() {
           <Route path="/locations" element={<LocationsPage />} />
           <Route path="/product/:id" element={<ProductPage />} />
           <Route path="/cart" element={<CartPage />} />
-<Route path="/checkout" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
+          <Route path="/checkout" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
           <Route path="/testimonial" element={<TestimonialPage />} />
           <Route path="/weather" element={<WeatherPage />} />
