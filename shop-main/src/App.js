@@ -32,18 +32,31 @@ function App() {
     let cancelled = false;
 
     const init = async () => {
-      try {
-        await seedSampleProducts();
-        if (cancelled) return;
-        dispatch(startProductsListener());
-        dispatch(startLocationsListener());
-      } catch (error) {
-        if (!cancelled) {
-          console.error('Failed to start app:', error);
-          setInitError(error?.message || 'Failed to initialize app');
-        }
-      }
-    };
+  try {
+    console.log("Starting product seeding...");
+
+    await seedSampleProducts();
+
+    console.log("Product seeding completed");
+
+    if (cancelled) return;
+
+    console.log("Starting products listener...");
+    dispatch(startProductsListener());
+
+    console.log("Starting locations listener...");
+    dispatch(startLocationsListener());
+
+  } catch (error) {
+    console.error("Failed to start app:", error);
+
+    if (!cancelled) {
+      setInitError(
+        error?.message || "Failed to initialize app"
+      );
+    }
+  }
+};
 
     init();
 

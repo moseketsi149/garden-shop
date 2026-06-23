@@ -9,6 +9,8 @@ import ComingSoonCompact from "../components/ComingSoonCompact";
 
 export default function ShopPage() {
   const products = useSelector((state) => state.order.products);
+const loading = useSelector((state) => state.order.loading);
+const error = useSelector((state) => state.order.error);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [query, setQuery] = useState(() => searchParams.get("query") || "");
@@ -23,6 +25,13 @@ export default function ShopPage() {
   const [productImageHashes, setProductImageHashes] = useState({});
   const [activeCategory, setActiveCategory] = useState("all");
   const recognitionRef = useRef(null);
+
+  useEffect(() => {
+  console.log("ShopPage Products:", products);
+  console.log("ShopPage Count:", products.length);
+  console.log("ShopPage Loading:", loading);
+  console.log("ShopPage Error:", error);
+}, [products, loading, error]);
 
   const companies = useMemo(() => {
     const setCompanies = new Set(
@@ -420,55 +429,52 @@ if (
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filtered.length > 0 ? (
-            filtered.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onTagClick={handleTagClick}
-              />
-            ))
-          ) : (
-            <div className="col-span-full space-y-6">
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-                <p className="text-lg font-semibold text-slate-900">
-                    results loading  "{query}"
-                </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Try these suggestions or browse popular items:
-                </p>
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                  {products.slice(0, 3).map((p) => (
-                    <button
-                      key={`s-${p.id}`}
-                      onClick={() => {
-                        setQuery(p.name);
-                        setCompanyFilter("all");
-                      }}
-                      className="rounded-full border px-4 py-2 text-sm hover:bg-slate-50"
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                  {Array.from(new Set(products.map((p) => p.company)))
-                    .slice(0, 3)
-                    .map((c) => (
-                      <button
-                        key={`c-${c}`}
-                        onClick={() => {
-                          setCompanyFilter(c);
-                          setQuery("");
-                        }}
-                        className="rounded-full border px-4 py-2 text-sm hover:bg-slate-50"
-                      >
-                        {c}
-                      </button>
-                    ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+
+  {loading ? (
+    <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-8 text-center">
+      <h2 className="text-lg font-semibold">
+        Loading Products...
+      </h2>
+    </div>
+  ) : error ? (
+    <div className="col-span-full rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+      <h2 className="text-lg font-semibold text-red-700">
+        Firestore Error
+      </h2>
+
+      <p className="mt-2 text-red-600">
+        {error}
+      </p>
+    </div>
+  ) : filtered.length > 0 ? (
+    filtered.map((product) => (
+      <ProductCard
+        key={product.id}
+        product={product}
+        onTagClick={handleTagClick}
+      />
+    ))
+  ) : (
+    <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-8 text-center">
+      <h2 className="text-lg font-semibold">
+        No Products Found
+      </h2>
+
+      <p className="mt-2 text-slate-600">
+        Products in Redux: {products.length}
+      </p>
+
+      <p className="mt-2 text-slate-600">
+        Products after filtering: {filtered.length}
+      </p>
+
+      <p className="mt-2 text-slate-600">
+        Search query: "{query}"
+      </p>
+    </div>
+  )}
+
+</div>
       </main>
     </div>
   );

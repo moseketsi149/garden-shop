@@ -1,9 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
 let unsubscribeProducts = null;
 
+/**
+ * Start realtime Firestore listener
+ */
 export const startProductsListener = () => async (dispatch) => {
   if (unsubscribeProducts) return;
 
@@ -11,33 +22,79 @@ export const startProductsListener = () => async (dispatch) => {
   dispatch(setProductsError(null));
 
   try {
-    const q = collection(db, 'products');
+    console.log('Starting Firestore products listener...');
+
+    const productsRef = collection(db, 'products');
 
     unsubscribeProducts = onSnapshot(
-      q,
+      productsRef,
+
       (snapshot) => {
-        const products = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        console.log(
+          `Firestore products count: ${snapshot.size}`
+        );
+
+        const products = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+        }));
+
+        console.log(
+          'Products loaded:',
+          products.map((p) => p.name)
+        );
+
         dispatch(setProducts(products));
         dispatch(setProductsLoading(false));
       },
+
       (error) => {
-        dispatch(setProductsError(error?.message || 'Failed to sync products'));
+        console.error(
+          'Firestore listener error:',
+          error
+        );
+
+        dispatch(
+          setProductsError(
+            error?.message ||
+              'Failed to sync products'
+          )
+        );
+
         dispatch(setProductsLoading(false));
       }
     );
   } catch (error) {
-    dispatch(setProductsError(error?.message || 'Failed to start products listener'));
+    console.error(
+      'Failed to start products listener:',
+      error
+    );
+
+    dispatch(
+      setProductsError(
+        error?.message ||
+          'Failed to start products listener'
+      )
+    );
+
     dispatch(setProductsLoading(false));
   }
 };
 
+/**
+ * Stop listener
+ */
 export const stopProductsListener = () => () => {
   if (unsubscribeProducts) {
     unsubscribeProducts();
     unsubscribeProducts = null;
+    console.log('Products listener stopped');
   }
 };
 
+/**
+ * Add Product
+ */
 export const addProduct = createAsyncThunk(
   'order/addProduct',
   async (productData, { rejectWithValue }) => {
@@ -46,14 +103,26 @@ export const addProduct = createAsyncThunk(
         ...productData,
         createdAt: serverTimestamp(),
       };
-      const docRef = await addDoc(collection(db, 'products'), payload);
-      return { id: docRef.id, ...payload };
+
+      const docRef = await addDoc(
+        collection(db, 'products'),
+        payload
+      );
+
+      return {
+        id: docRef.id,
+        ...productData,
+      };
     } catch (error) {
+      console.error('Add product failed:', error);
       return rejectWithValue(error.message);
     }
   }
 );
 
+/**
+ * Update Product
+ */
 export const updateProduct = createAsyncThunk(
   'order/updateProduct',
   async ({ id, ...productData }, { rejectWithValue }) => {
@@ -62,21 +131,35 @@ export const updateProduct = createAsyncThunk(
         ...productData,
         updatedAt: serverTimestamp(),
       };
-      await updateDoc(doc(db, 'products', id), payload);
-      return { id, ...payload };
+
+      await updateDoc(
+        doc(db, 'products', id),
+        payload
+      );
+
+      return {
+        id,
+        ...productData,
+      };
     } catch (error) {
+      console.error('Update product failed:', error);
       return rejectWithValue(error.message);
     }
   }
 );
 
+/**
+ * Delete Product
+ */
 export const deleteProduct = createAsyncThunk(
   'order/deleteProduct',
   async (id, { rejectWithValue }) => {
     try {
       await deleteDoc(doc(db, 'products', id));
+
       return id;
     } catch (error) {
+      console.error('Delete product failed:', error);
       return rejectWithValue(error.message);
     }
   }
@@ -91,51 +174,82 @@ const initialState = {
 
 const orderSlice = createSlice({
   name: 'order',
+
   initialState,
+
   reducers: {
     setProducts(state, action) {
       state.products = action.payload;
     },
+
     setProductsLoading(state, action) {
       state.loading = action.payload;
     },
+
     setProductsError(state, action) {
       state.error = action.payload;
     },
+
     createOrder(state, action) {
       const order = {
         id: `ord-${Date.now()}`,
         createdAt: new Date().toISOString(),
         ...action.payload,
       };
+
       state.history.unshift(order);
     },
   },
+
   extraReducers: (builder) => {
     builder
+
       .addCase(addProduct.fulfilled, (state, action) => {
         state.products.unshift(action.payload);
       })
+
       .addCase(addProduct.rejected, (state, action) => {
-        state.error = action.payload || 'Failed to add product';
+        state.error =
+          action.payload ||
+          'Failed to add product';
       })
+
       .addCase(updateProduct.fulfilled, (state, action) => {
-        const index = state.products.findIndex((p) => p.id === action.payload.id);
+        const index = state.products.findIndex(
+          (p) => p.id === action.payload.id
+        );
+
         if (index >= 0) {
-          state.products[index] = action.payload;
+          state.products[index] =
+            action.payload;
         }
       })
+
       .addCase(updateProduct.rejected, (state, action) => {
-        state.error = action.payload || 'Failed to update product';
+        state.error =
+          action.payload ||
+          'Failed to update product';
       })
+
       .addCase(deleteProduct.fulfilled, (state, action) => {
-        state.products = state.products.filter((p) => p.id !== action.payload);
+        state.products = state.products.filter(
+          (p) => p.id !== action.payload
+        );
       })
+
       .addCase(deleteProduct.rejected, (state, action) => {
-        state.error = action.payload || 'Failed to delete product';
+        state.error =
+          action.payload ||
+          'Failed to delete product';
       });
   },
 });
 
-export const { setProducts, setProductsLoading, setProductsError, createOrder } = orderSlice.actions;
+export const {
+  setProducts,
+  setProductsLoading,
+  setProductsError,
+  createOrder,
+} = orderSlice.actions;
+
 export default orderSlice.reducer;
