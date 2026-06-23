@@ -28,8 +28,8 @@ const productImageUrls = {
   FreshStrawberries:
     "https://sagealphagal.com/wp-content/uploads/2024/05/Bowls-of-Fresh-Strawberries-YayImages.jpg",
   MixedSaladGreens:
-    "https://www.homemadeinterest.com/wp-content/uploads/2023/03/Mixed-Green-Salad_2.jpg",
-  CarrotBundle:
+"https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+CarrotBundle:
     "https://tse4.mm.bing.net/th/id/OIP.7D_cxvMc0lRrVT7i9QCTpAHaFW?w=1600&h=1157&rs=1&pid=ImgDetMain&o=7&rm=3",
   CannedTomatoSauce:
     "https://tse4.mm.bing.net/th/id/OIP.blm9p4Z5NYW0ALMsPopVPAHaE7?rs=1&pid=ImgDetMain&o=7&rm=3",
@@ -206,32 +206,58 @@ const ensureStableSampleProducts = async () => {
 
 let seeding = false;
 
-/**
- * Seed products into Firestore
- */
 export const seedSampleProducts = async () => {
   if (seeding) return;
+
   seeding = true;
 
   try {
     const productsRef = collection(db, "products");
-    const existingProducts = await getDocs(productsRef);
 
-    if (!existingProducts.empty) {
-      await ensureStableSampleProducts();
-      return;
-    }
+    for (const product of sampleProducts) {
+      if (!product.image) {
+        console.error(
+          `Skipping ${product.name}: image is undefined`
+        );
+        continue;
+      }
 
-    await Promise.all(
-      sampleProducts.map((product) =>
-        addDoc(productsRef, {
+      const snapshot = await getDocs(
+        query(productsRef, where("name", "==", product.name))
+      );
+
+      if (snapshot.empty) {
+        await addDoc(productsRef, {
           ...product,
           createdAt: serverTimestamp(),
-        }),
-      ),
-    );
+        });
+
+        console.log(
+          `Added product: ${product.name}`
+        );
+      } else {
+        for (const docSnap of snapshot.docs) {
+          await updateDoc(
+            doc(db, "products", docSnap.id),
+            {
+              ...product,
+              updatedAt: serverTimestamp(),
+            }
+          );
+        }
+
+        console.log(
+          `Updated product: ${product.name}`
+        );
+      }
+    }
+
+    console.log("Product seeding completed");
   } catch (error) {
-    console.error("Error seeding products:", error);
+    console.error(
+      "Error seeding products:",
+      error
+    );
   } finally {
     seeding = false;
   }
