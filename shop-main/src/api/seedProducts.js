@@ -1,7 +1,3 @@
-console.log(
-  `Sample products count: ${sampleProducts.length}`
-);
-
 import {
   collection,
   addDoc,
@@ -220,51 +216,51 @@ export const seedSampleProducts = async () => {
     const productsRef = collection(db, "products");
 
     for (const product of sampleProducts) {
-  console.log(`Processing: ${product.name}`);
+      console.log(`Processing: ${product.name}`);
 
-  if (!product.image) {
-    console.error(
-      `Skipping ${product.name}: image is undefined`
-    );
-    continue;
-  }
-
-  try {
-    const snapshot = await getDocs(
-      query(productsRef, where("name", "==", product.name))
-    );
-
-    if (snapshot.empty) {
-      console.log(`Adding ${product.name}`);
-
-      await addDoc(productsRef, {
-        ...product,
-        createdAt: serverTimestamp(),
-      });
-
-      console.log(`Added ${product.name}`);
-    } else {
-      console.log(`Updating ${product.name}`);
-
-      for (const docSnap of snapshot.docs) {
-        await updateDoc(
-          doc(db, "products", docSnap.id),
-          {
-            ...product,
-            updatedAt: serverTimestamp(),
-          }
+      if (!product.image) {
+        console.error(
+          `Skipping ${product.name}: image is undefined`
         );
+        continue;
       }
 
-      console.log(`Updated ${product.name}`);
+      try {
+        const snapshot = await getDocs(
+          query(productsRef, where("name", "==", product.name))
+        );
+
+        if (snapshot.empty) {
+          console.log(`Adding ${product.name}`);
+
+          await addDoc(productsRef, {
+            ...product,
+            createdAt: serverTimestamp(),
+          });
+
+          console.log(`Added ${product.name}`);
+        } else {
+          console.log(`Updating ${product.name}`);
+
+          for (const docSnap of snapshot.docs) {
+            await updateDoc(
+              doc(db, "products", docSnap.id),
+              {
+                ...product,
+                updatedAt: serverTimestamp(),
+              }
+            );
+          }
+
+          console.log(`Updated ${product.name}`);
+        }
+      } catch (error) {
+        console.error(
+          `FAILED on product: ${product.name}`,
+          error
+        );
+      }
     }
-  } catch (error) {
-    console.error(
-      `FAILED on product: ${product.name}`,
-      error
-    );
-  }
-}
 
     console.log("Product seeding completed");
   } catch (error) {
@@ -276,5 +272,3 @@ export const seedSampleProducts = async () => {
     seeding = false;
   }
 };
-
-console.log("Product seeding completed");
