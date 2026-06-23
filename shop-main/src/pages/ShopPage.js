@@ -432,7 +432,7 @@ if (
             <div className="col-span-full space-y-6">
               <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
                 <p className="text-lg font-semibold text-slate-900">
-                  No results for "{query}"
+                    results loading  "{query}"
                 </p>
                 <p className="mt-2 text-sm text-slate-600">
                   Try these suggestions or browse popular items:
