@@ -41,12 +41,11 @@ function App() {
 
     if (cancelled) return;
 
-    console.log("Starting products listener...");
-    dispatch(startProductsListener());
+    console.log("Dispatching products listener...");
+dispatch(startProductsListener());
 
-    console.log("Starting locations listener...");
-    dispatch(startLocationsListener());
-
+console.log("Dispatching locations listener...");
+dispatch(startLocationsListener());
   } catch (error) {
     console.error("Failed to start app:", error);
 

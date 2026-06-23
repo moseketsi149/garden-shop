@@ -23,15 +23,15 @@ const productImageUrls = {
     "https://minnetonkaorchards.com/wp-content/uploads/2022/06/Ind-2.jpg",
   organicFertilizer:
     "https://tse1.explicit.bing.net/th/id/OIP.OAzeWGolsGkwjpIxdiKhoQHaFE?rs=1&pid=ImgDetMain&o=7&rm=3",
-  FreshApples: 
+  freshApples: 
   "https://thumbs.dreamstime.com/z/fresh-apples-26723823.jpg",
-  FreshStrawberries:
+  freshStrawberries:
     "https://sagealphagal.com/wp-content/uploads/2024/05/Bowls-of-Fresh-Strawberries-YayImages.jpg",
-  MixedSaladGreens:
+  mixedSaladGreens:
 "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
-CarrotBundle:
+carrotBundle:
     "https://tse4.mm.bing.net/th/id/OIP.7D_cxvMc0lRrVT7i9QCTpAHaFW?w=1600&h=1157&rs=1&pid=ImgDetMain&o=7&rm=3",
-  CannedTomatoSauce:
+  cannedTomatoSauce:
     "https://tse4.mm.bing.net/th/id/OIP.blm9p4Z5NYW0ALMsPopVPAHaE7?rs=1&pid=ImgDetMain&o=7&rm=3",
 };
 
@@ -56,7 +56,7 @@ const sampleProducts = [
     stock: 90,
     category: "fruits-vegetables",
     tags: ["carrots", "fresh", "vegetables"],
-    image: productImageUrls.CarrotBundle,
+    image: productImageUrls.carrotBundle,
     discount: 5,
   },
   {
@@ -66,7 +66,7 @@ const sampleProducts = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["salad", "greens", "fresh"],
-    image: productImageUrls.MixedSaladGreens,
+    image: productImageUrls.mixedSaladGreens,
     isNew: true,
   },
   {
@@ -85,17 +85,17 @@ const sampleProducts = [
     stock: 150,
     category: "processing",
     tags: ["canned", "sauce", "tomatoes"],
-    image: productImageUrls.CannedTomatoSauce,
+    image: productImageUrls.cannedTomatoSauce,
   },
   {
-    name: "Organic Fertilizer",
-    company: "The Roots Teams",
-    price: 25,
-    stock: 150,
-    category: "nutrition",
-    tags: ["fertilizer", "organic", "soil"],
-    image: productImageUrls.OrganicFertilizer,
-  },
+  name: "Organic Fertilizer",
+  company: "The Roots Teams",
+  price: 25,
+  stock: 150,
+  category: "nutrition",
+  tags: ["fertilizer", "organic", "soil"],
+  image: productImageUrls.organicFertilizer,
+},
   {
     name: "Plant Nutrition Pack",
     company: "The Roots Teams",
@@ -113,7 +113,7 @@ const sampleProducts = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["strawberries", "berries", "fresh", "fruits"],
-    image: productImageUrls.FreshStrawberries,
+    image: productImageUrls.freshStrawberries,
   },
   {
     name: "Fresh Apples",
@@ -122,7 +122,7 @@ const sampleProducts = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["apples", "fruits", "fresh"],
-    image: productImageUrls.FreshApples,
+    image: productImageUrls.freshApples,
   },
   {
     name: "Premium Blueberry Bushes",
@@ -149,6 +149,7 @@ const sampleProducts = [
     expectedArrival: "August 2026",
   },
 ];
+
 
 /**
  * Update images for existing products and add any missing ones
@@ -235,6 +236,9 @@ export const seedSampleProducts = async () => {
         console.log(
           `Added product: ${product.name}`
         );
+
+        
+
       } else {
         for (const docSnap of snapshot.docs) {
           await updateDoc(
