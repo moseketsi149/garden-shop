@@ -28,34 +28,31 @@ function App() {
   const dispatch = useDispatch();
   const [initError, setInitError] = useState(null);
 
-  useEffect(() => {
+useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
-  try {
-    console.log("Starting product seeding...");
+   try {
+     console.log("Starting product seeding...");
 
-    await seedSampleProducts();
+     await seedSampleProducts();
 
-    console.log("Product seeding completed");
+     console.log("Product seeding completed, starting listeners...");
 
-    if (cancelled) return;
+     if (cancelled) return;
 
-    console.log("Dispatching products listener...");
-dispatch(startProductsListener());
+     dispatch(startProductsListener());
+     dispatch(startLocationsListener());
+   } catch (error) {
+     console.error("Failed to start app:", error.message || error);
 
-console.log("Dispatching locations listener...");
-dispatch(startLocationsListener());
-  } catch (error) {
-    console.error("Failed to start app:", error);
-
-    if (!cancelled) {
-      setInitError(
-        error?.message || "Failed to initialize app"
-      );
-    }
-  }
-};
+     if (!cancelled) {
+       setInitError(
+         error?.message || "Failed to initialize app"
+       );
+     }
+   }
+ };
 
     init();
 

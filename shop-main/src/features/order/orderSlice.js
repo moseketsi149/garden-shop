@@ -13,8 +13,8 @@ import { db } from '../../firebase/config';
 let unsubscribeProducts = null;
 
 /**
- * Start realtime Firestore listener
- */
+  * Start realtime Firestore listener
+  */
 export const startProductsListener = () => async (dispatch) => {
   if (unsubscribeProducts) return;
 
@@ -51,13 +51,13 @@ export const startProductsListener = () => async (dispatch) => {
       (error) => {
         console.error(
           'Firestore listener error:',
-          error
+          error.message || error
         );
 
         dispatch(
           setProductsError(
             error?.message ||
-              'Failed to sync products'
+              (error?.code === 'permission-denied' ? 'Permission denied - check Firestore rules' : 'Failed to sync products')
           )
         );
 
@@ -67,7 +67,7 @@ export const startProductsListener = () => async (dispatch) => {
   } catch (error) {
     console.error(
       'Failed to start products listener:',
-      error
+      error.message || error
     );
 
     dispatch(

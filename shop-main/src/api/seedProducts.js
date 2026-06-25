@@ -87,15 +87,15 @@ const sampleProducts = [
     tags: ["canned", "sauce", "tomatoes"],
     image: productImageUrls.cannedTomatoSauce,
   },
-  {
-  name: "Organic Fertilizer",
-  company: "The Roots Teams",
-  price: 25,
-  stock: 150,
-  category: "nutrition",
-  tags: ["fertilizer", "organic", "soil"],
-  image: productImageUrls.organicFertilizer,
-},
+{
+    name: "Organic Fertilizer",
+    company: "The Roots Teams",
+    price: 25,
+    stock: 150,
+    category: "nutrition",
+    tags: ["fertilizer", "organic", "soil"],
+    image: productImageUrls.organicFertilizer,
+  },
   {
     name: "Plant Nutrition Pack",
     company: "The Roots Teams",
@@ -207,8 +207,16 @@ const ensureStableSampleProducts = async () => {
 
 let seeding = false;
 
+// Reset seeding flag for development (hot reload can leave it stuck)
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  window.resetSeeding = () => { seeding = false; console.log('Seeding flag reset'); };
+}
+
 export const seedSampleProducts = async () => {
-  if (seeding) return;
+  if (seeding) {
+    console.log('Seeding already in progress, skipping');
+    return;
+  }
 
   seeding = true;
 
@@ -226,19 +234,21 @@ export const seedSampleProducts = async () => {
       }
 
       try {
+        console.log(`Querying for: ${product.name}`);
         const snapshot = await getDocs(
           query(productsRef, where("name", "==", product.name))
         );
+        console.log(`Query completed, empty: ${snapshot.empty}`);
 
         if (snapshot.empty) {
           console.log(`Adding ${product.name}`);
 
-          await addDoc(productsRef, {
+          const docRef = await addDoc(productsRef, {
             ...product,
             createdAt: serverTimestamp(),
           });
 
-          console.log(`Added ${product.name}`);
+          console.log(`Added ${product.name} with ID: ${docRef.id}`);
         } else {
           console.log(`Updating ${product.name}`);
 
@@ -257,7 +267,7 @@ export const seedSampleProducts = async () => {
       } catch (error) {
         console.error(
           `FAILED on product: ${product.name}`,
-          error
+          error.message || error
         );
       }
     }
@@ -266,7 +276,7 @@ export const seedSampleProducts = async () => {
   } catch (error) {
     console.error(
       "Error seeding products:",
-      error
+      error.message || error
     );
   } finally {
     seeding = false;
