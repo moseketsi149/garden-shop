@@ -29,7 +29,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["salad", "greens", "fresh"],
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+    image: "https://mommyevolution.com/wp-content/uploads/2024/07/Mixed-Citrus-Green-Salad-pinterest.jpg",
     isNew: true,
   },
   {
@@ -57,7 +57,7 @@ const products = [
     stock: 150,
     category: "nutrition",
     tags: ["fertilizer", "organic", "soil"],
-    image: "https://tse1.explicit.bing.net/th/id/OIP.OAzeWGolsGkwjpIxdiKhoQHaFE?rs=1&pid=ImgDetMain&o=7&rm=3",
+    image: "https://plantcaretoday.com/wp-content/uploads/organic-fertilizer-02292016-min.jpg",
   },
   {
     name: "Plant Nutrition Pack",
@@ -66,7 +66,7 @@ const products = [
     stock: 80,
     category: "nutrition",
     tags: ["nutrients", "plant", "care"],
-    image: "https://tse2.mm.bing.net/th/id/OIP.rS-9eitV7kTv0jtchCN1TQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
+    image: "https://tse3.mm.bing.net/th/id/OIP.6dvNHLUOxyx3pPvU3-SVmAAAAA?w=460&h=689&rs=1&pid=ImgDetMain&o=7&rm=3",
     discount: 10,
   },
   {
@@ -76,7 +76,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["strawberries", "berries", "fresh", "fruits"],
-    image: "https://sagealphagal.com/wp-content/uploads/2024/05/Bowls-of-Fresh-Strawberries-YayImages.jpg",
+    image: "https://tse2.mm.bing.net/th/id/OIP.b1wcyWAHG1rwxtEBtCe7WQAAAA?w=300&h=300&rs=1&pid=ImgDetMain&o=7&rm=3",
   },
   {
     name: "Fresh Apples",
@@ -85,7 +85,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["apples", "fruits", "fresh"],
-    image: "https://thumbs.dreamstime.com/z/fresh-apples-26723823.jpg",
+    image: "https://media.istockphoto.com/id/187420397/photo/red-apples.jpg?s=612x612&w=0&k=20&c=2gP5VblBy8wBB1aMuB9godHm_QYuKOdvb1U_f9h4Kjk=",
   },
   {
     name: "Premium Blueberry Bushes",
