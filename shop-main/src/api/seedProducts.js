@@ -1,4 +1,4 @@
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
 
 const products = [
@@ -113,11 +113,29 @@ const products = [
 
 export const seedSampleProducts = async () => {
   try {
+    const productsRef = collection(db, "products");
+
     for (const product of products) {
-      await addDoc(collection(db, "products"), product);
+      const q = query(productsRef, where("name", "==", product.name));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        await addDoc(productsRef, {
+          ...product,
+          createdAt: serverTimestamp(),
+        });
+      } else {
+        for (const docSnap of snapshot.docs) {
+          await updateDoc(doc(productsRef, docSnap.id), {
+            ...product,
+            updatedAt: serverTimestamp(),
+          });
+        }
+      }
     }
-    console.log("Products added successfully!");
+
+    console.log("Products seeded successfully!");
   } catch (error) {
-    console.error(error);
+    console.error("Seeding failed:", error);
   }
 };
