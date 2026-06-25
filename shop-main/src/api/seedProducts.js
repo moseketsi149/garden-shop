@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, where, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, serverTimestamp, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
 const products = [
@@ -137,5 +137,32 @@ export const seedSampleProducts = async () => {
     console.log("Products seeded successfully!");
   } catch (error) {
     console.error("Seeding failed:", error);
+  }
+};
+
+export const deduplicateProducts = async () => {
+  try {
+    const productsRef = collection(db, "products");
+    const q = query(productsRef, orderBy("createdAt", "asc"));
+    const snapshot = await getDocs(q);
+    const docs = snapshot.docs;
+
+    const seen = new Map();
+
+    for (const docSnap of docs) {
+      const data = docSnap.data();
+      const name = data.name;
+
+      if (seen.has(name)) {
+        await deleteDoc(doc(productsRef, docSnap.id));
+        console.log(`Deleted duplicate: ${name} (${docSnap.id})`);
+      } else {
+        seen.set(name, docSnap.id);
+      }
+    }
+
+    console.log(`Deduplication complete. Kept ${seen.size} unique products.`);
+  } catch (error) {
+    console.error("Deduplication failed:", error);
   }
 };

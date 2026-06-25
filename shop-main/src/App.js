@@ -22,7 +22,6 @@ import BackButton from './components/BackButton';
 import { AuthProvider } from './context/AuthContext';
 import { startProductsListener, stopProductsListener } from './features/order/orderSlice';
 import { startLocationsListener, stopLocationsListener } from './features/locations/locationsSlice';
-import { seedSampleProducts } from './api/seedProducts';
 
 function App() {
   const dispatch = useDispatch();
@@ -33,11 +32,7 @@ useEffect(() => {
 
     const init = async () => {
    try {
-     console.log("Starting product seeding...");
-
-     await seedSampleProducts();
-
-     console.log("Product seeding completed, starting listeners...");
+     console.log("Starting listeners...");
 
      if (cancelled) return;
 
