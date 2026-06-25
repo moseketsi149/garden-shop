@@ -23,40 +23,36 @@ import { AuthProvider } from './context/AuthContext';
 import { startProductsListener, stopProductsListener } from './features/order/orderSlice';
 import { startLocationsListener, stopLocationsListener } from './features/locations/locationsSlice';
 
+import { seedSampleProducts, deduplicateProducts } from './api/seedProducts';
+import { db } from './firebase/config';
+
 function App() {
   const dispatch = useDispatch();
   const [initError, setInitError] = useState(null);
 
 useEffect(() => {
-    let cancelled = false;
-
     const init = async () => {
    try {
-     console.log("Starting listeners...");
-
-     if (cancelled) return;
-
      dispatch(startProductsListener());
      dispatch(startLocationsListener());
    } catch (error) {
      console.error("Failed to start app:", error.message || error);
-
-     if (!cancelled) {
-       setInitError(
-         error?.message || "Failed to initialize app"
-       );
-     }
+     setInitError(error?.message || "Failed to initialize app");
    }
  };
 
     init();
 
     return () => {
-      cancelled = true;
       dispatch(stopProductsListener());
       dispatch(stopLocationsListener());
     };
   }, [dispatch]);
+
+  if (typeof window !== 'undefined' && !window.__firebaseUtilsExposed) {
+    window.__firebaseUtilsExposed = true;
+    window.__firebaseUtils = { db, seedSampleProducts, deduplicateProducts };
+  }
 
   if (initError) {
     return (
