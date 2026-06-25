@@ -1,16 +1,17 @@
-import { useSelector } from "react-redux";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import Fuse from "fuse.js";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/config";
 import ShopHeader from "../components/ShopHeader";
 import ProductCard from "../components/ProductCard";
 import ComingSoonCompact from "../components/ComingSoonCompact";
 
 export default function ShopPage() {
-  const products = useSelector((state) => state.order.products);
-const loading = useSelector((state) => state.order.loading);
-const error = useSelector((state) => state.order.error);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [query, setQuery] = useState(() => searchParams.get("query") || "");
@@ -27,11 +28,27 @@ const error = useSelector((state) => state.order.error);
   const recognitionRef = useRef(null);
 
   useEffect(() => {
-  console.log("ShopPage Products:", products);
-  console.log("ShopPage Count:", products.length);
-  console.log("ShopPage Loading:", loading);
-  console.log("ShopPage Error:", error);
-}, [products, loading, error]);
+    const fetchProducts = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "products"));
+        const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setProducts(items);
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to fetch products");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    console.log("ShopPage Products:", products);
+    console.log("ShopPage Count:", products.length);
+    console.log("ShopPage Loading:", loading);
+    console.log("ShopPage Error:", error);
+  }, [products, loading, error]);
 
   const companies = useMemo(() => {
     const setCompanies = new Set(
