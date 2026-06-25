@@ -32,7 +32,17 @@ export default function ShopPage() {
       try {
         const snapshot = await getDocs(collection(db, "products"));
         const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setProducts(items);
+
+        const unique = [];
+        const seen = new Set();
+        for (const product of items) {
+          if (!seen.has(product.name)) {
+            seen.add(product.name);
+            unique.push(product);
+          }
+        }
+
+        setProducts(unique);
         setError(null);
       } catch (err) {
         setError(err.message || "Failed to fetch products");

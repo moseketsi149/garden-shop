@@ -23,7 +23,7 @@ import { AuthProvider } from './context/AuthContext';
 import { startProductsListener, stopProductsListener } from './features/order/orderSlice';
 import { startLocationsListener, stopLocationsListener } from './features/locations/locationsSlice';
 
-import { seedSampleProducts, deduplicateProducts } from './api/seedProducts';
+import { deduplicateProducts } from './api/seedProducts';
 import { db } from './firebase/config';
 
 function App() {
@@ -33,6 +33,11 @@ function App() {
 useEffect(() => {
     const init = async () => {
    try {
+     console.log("Starting product deduplication...");
+     const snapshot = await deduplicateProducts();
+
+     console.log("Product deduplication completed, starting listeners...");
+
      dispatch(startProductsListener());
      dispatch(startLocationsListener());
    } catch (error) {
@@ -51,7 +56,7 @@ useEffect(() => {
 
   if (typeof window !== 'undefined' && !window.__firebaseUtilsExposed) {
     window.__firebaseUtilsExposed = true;
-    window.__firebaseUtils = { db, seedSampleProducts, deduplicateProducts };
+    window.__firebaseUtils = { db, deduplicateProducts };
   }
 
   if (initError) {
