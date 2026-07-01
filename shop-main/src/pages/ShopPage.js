@@ -7,6 +7,7 @@ import { db } from "../firebase/config";
 import ShopHeader from "../components/ShopHeader";
 import ProductCard from "../components/ProductCard";
 import ComingSoonCompact from "../components/ComingSoonCompact";
+import { seedSampleProducts } from "../api/seedProducts";
 
 export default function ShopPage() {
   const [products, setProducts] = useState([]);
@@ -472,34 +473,44 @@ if (
       <p className="mt-2 text-red-600">
         {error}
       </p>
-    </div>
-  ) : filtered.length > 0 ? (
-    filtered.map((product) => (
-      <ProductCard
-        key={product.id}
-        product={product}
-        onTagClick={handleTagClick}
-      />
-    ))
-  ) : (
-    <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-8 text-center">
-      <h2 className="text-lg font-semibold">
-        No Products Found
-      </h2>
+</div>
+       ) : filtered.length > 0 ? (
+        filtered.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onTagClick={handleTagClick}
+          />
+        ))
+      ) : (
+        <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <h2 className="text-lg font-semibold">
+            No Products Found
+          </h2>
 
-      <p className="mt-2 text-slate-600">
-        Products in Redux: {products.length}
-      </p>
+          <p className="mt-2 text-slate-600">
+            Products in Redux: {products.length}
+          </p>
 
-      <p className="mt-2 text-slate-600">
-        Products after filtering: {filtered.length}
-      </p>
+          <p className="mt-2 text-slate-600">
+            Products after filtering: {filtered.length}
+          </p>
 
-      <p className="mt-2 text-slate-600">
-        Search query: "{query}"
-      </p>
-    </div>
-  )}
+          <p className="mt-2 text-slate-600">
+            Search query: "{query}"
+          </p>
+
+          <button
+            onClick={async () => {
+              await seedSampleProducts();
+              window.location.reload();
+            }}
+            className="mt-4 rounded-full bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700"
+          >
+            Seed Product Data
+          </button>
+        </div>
+      )}
 
 </div>
       </main>

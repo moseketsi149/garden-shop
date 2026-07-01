@@ -23,7 +23,9 @@ import { AuthProvider } from './context/AuthContext';
 import { startProductsListener, stopProductsListener } from './features/order/orderSlice';
 import { startLocationsListener, stopLocationsListener } from './features/locations/locationsSlice';
 
-import { deduplicateProducts } from './api/seedProducts';
+import { seedSampleProducts, deduplicateProducts } from './api/seedProducts';
+import ProductImageUploader from './components/ProductImageUploader';
+import StorageImageViewer from './components/StorageImageViewer';
 import { db } from './firebase/config';
 
 function App() {
@@ -33,18 +35,20 @@ function App() {
 useEffect(() => {
     const init = async () => {
    try {
-     console.log("Starting product deduplication...");
-     const snapshot = await deduplicateProducts();
+      console.log("Seeding products...");
+      await seedSampleProducts();
+      console.log("Starting product deduplication...");
+      await deduplicateProducts();
 
-     console.log("Product deduplication completed, starting listeners...");
+      console.log("Product deduplication completed, starting listeners...");
 
-     dispatch(startProductsListener());
-     dispatch(startLocationsListener());
-   } catch (error) {
-     console.error("Failed to start app:", error.message || error);
-     setInitError(error?.message || "Failed to initialize app");
-   }
- };
+      dispatch(startProductsListener());
+      dispatch(startLocationsListener());
+    } catch (error) {
+      console.error("Failed to start app:", error.message || error);
+      setInitError(error?.message || "Failed to initialize app");
+    }
+  };
 
     init();
 
@@ -56,7 +60,7 @@ useEffect(() => {
 
   if (typeof window !== 'undefined' && !window.__firebaseUtilsExposed) {
     window.__firebaseUtilsExposed = true;
-    window.__firebaseUtils = { db, deduplicateProducts };
+    window.__firebaseUtils = { db, seedSampleProducts, deduplicateProducts };
   }
 
   if (initError) {
@@ -96,6 +100,8 @@ useEffect(() => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/register/customer" element={<CustomerRegisterPage />} />
+          <Route path="/admin/upload-images" element={<ProductImageUploader />} />
+          <Route path="/admin/storage-images" element={<StorageImageViewer />} />
         </Routes>
         <Footer />
         <ToastContainer position="top-right" theme="colored" />
