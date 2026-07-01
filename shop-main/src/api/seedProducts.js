@@ -9,7 +9,7 @@ const products = [
     stock: 120,
     category: "fruits-vegetables",
     tags: ["tomatoes", "fresh", "vegetables"],
-    image: "https://minnetonkaorchards.com/wp-content/uploads/2022/06/Ind-2.jpg",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Fresh%20Tomatoes.jpg?alt=media",
     isNew: true,
   },
   {
@@ -19,7 +19,7 @@ const products = [
     stock: 90,
     category: "fruits-vegetables",
     tags: ["carrots", "fresh", "vegetables"],
-    image: "https://tse4.mm.bing.net/th/id/OIP.7D_cxvMc0lRrVT7i9QCTpAHaFW?w=1600&h=1157&rs=1&pid=ImgDetMain&o=7&rm=3",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/carrot-table-with-fresh-vegetables_1268-33080.jpg?alt=media",
     discount: 5,
   },
   {
@@ -29,7 +29,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["salad", "greens", "fresh"],
-    image: "https://mommyevolution.com/wp-content/uploads/2024/07/Mixed-Citrus-Green-Salad-pinterest.jpg",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Mixed%20Salad%20Greens.jpg?alt=media",
     isNew: true,
   },
   {
@@ -39,7 +39,7 @@ const products = [
     stock: 200,
     category: "processing",
     tags: ["dried", "mango", "snack"],
-    image: "https://tse1.mm.bing.net/th/id/OIP.dN_LpFidwiVxOr8n4tOnWQHaHS?rs=1&pid=ImgDetMain&o=7&rm=3",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Dried%20Mango%20Slice.jpg?alt=media",
   },
   {
     name: "Canned Tomato Sauce",
@@ -48,7 +48,7 @@ const products = [
     stock: 150,
     category: "processing",
     tags: ["canned", "sauce", "tomatoes"],
-    image: "https://tse4.mm.bing.net/th/id/OIP.blm9p4Z5NYW0ALMsPopVPAHaE7?rs=1&pid=ImgDetMain&o=7&rm=3",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Canned%20Tomato%20Sauce.jpg?alt=media",
   },
   {
     name: "Organic Fertilizer",
@@ -57,7 +57,7 @@ const products = [
     stock: 150,
     category: "nutrition",
     tags: ["fertilizer", "organic", "soil"],
-    image: "https://plantcaretoday.com/wp-content/uploads/organic-fertilizer-02292016-min.jpg",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Organic%20Fertilizer.jpg?alt=media",
   },
   {
     name: "Plant Nutrition Pack",
@@ -66,7 +66,7 @@ const products = [
     stock: 80,
     category: "nutrition",
     tags: ["nutrients", "plant", "care"],
-    image: "https://tse3.mm.bing.net/th/id/OIP.6dvNHLUOxyx3pPvU3-SVmAAAAA?w=460&h=689&rs=1&pid=ImgDetMain&o=7&rm=3",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Plant%20Nutrition%20Pack.jpg?alt=media",
     discount: 10,
   },
   {
@@ -76,7 +76,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["strawberries", "berries", "fresh", "fruits"],
-    image: "https://tse2.mm.bing.net/th/id/OIP.b1wcyWAHG1rwxtEBtCe7WQAAAA?w=300&h=300&rs=1&pid=ImgDetMain&o=7&rm=3",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Fresh%20Strawberries.jpg?alt=media",
   },
   {
     name: "Fresh Apples",
@@ -85,7 +85,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["apples", "fruits", "fresh"],
-    image: "https://media.istockphoto.com/id/187420397/photo/red-apples.jpg?s=612x612&w=0&k=20&c=2gP5VblBy8wBB1aMuB9godHm_QYuKOdvb1U_f9h4Kjk=",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Fresh%20Apples.jpg?alt=media",
   },
   {
     name: "Premium Blueberry Bushes",
@@ -94,7 +94,7 @@ const products = [
     stock: 25,
     category: "fruits-vegetables",
     tags: ["berries", "bushes", "perennial"],
-    image: "https://img.freepik.com/premium-photo/photo-field-blueberry-bushes-ready-harvest_933496-44001.jpg?w=2000",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Premium%20Blueberry%20Bushes.jpg?alt=media",
     comingSoon: true,
     expectedArrival: "July 2026",
   },
@@ -105,7 +105,7 @@ const products = [
     stock: 50,
     category: "processing",
     tags: ["seeds", "heirloom", "rare"],
-    image: "https://coastalgardens.ca/wp-content/uploads/2022/02/seed-packs.jpg",
+    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Heirloom%20Seed%20Collection.jpg?alt=media",
     comingSoon: true,
     expectedArrival: "August 2026",
   },
