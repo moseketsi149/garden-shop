@@ -10,9 +10,9 @@ export default function StorageImageViewer() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const rootRef = ref(storage, '/');
+        const productsRef = ref(storage, 'products/');
 
-        const result = await listAll(rootRef);
+        const result = await listAll(productsRef);
 
         const urls = await Promise.all(
           result.items.map(async (itemRef) => {
@@ -20,6 +20,7 @@ export default function StorageImageViewer() {
             return {
               name: itemRef.name,
               url,
+              fullPath: itemRef.fullPath,
             };
           })
         );
@@ -27,7 +28,12 @@ export default function StorageImageViewer() {
         setImages(urls);
         setError(null);
       } catch (err) {
-        setError(err.message || 'Failed to fetch images from storage');
+        if (err.code === 'storage/object-not-found') {
+          setImages([]);
+          setError(null);
+        } else {
+          setError(err.message || 'Failed to fetch images from storage');
+        }
       } finally {
         setLoading(false);
       }
@@ -46,10 +52,13 @@ export default function StorageImageViewer() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-6">Firebase Storage Images ({images.length})</h2>
+      <h2 className="text-2xl font-semibold mb-6">Product Images from Firebase Storage ({images.length})</h2>
+      {images.length === 0 && (
+        <p className="text-slate-500 mb-4">No images found in the products/ folder. Upload some using the ProductImageUploader component.</p>
+      )}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
         {images.map((image) => (
-          <div key={image.name} className="rounded-lg overflow-hidden shadow-md bg-white">
+          <div key={image.fullPath} className="rounded-lg overflow-hidden shadow-md bg-white">
             <img
               src={image.url}
               alt={image.name}

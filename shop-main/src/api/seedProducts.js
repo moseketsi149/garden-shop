@@ -9,7 +9,7 @@ const products = [
     stock: 120,
     category: "fruits-vegetables",
     tags: ["tomatoes", "fresh", "vegetables"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Fresh%20Tomatoes.jpg?alt=media",
+    image: "",
     isNew: true,
   },
   {
@@ -19,7 +19,7 @@ const products = [
     stock: 90,
     category: "fruits-vegetables",
     tags: ["carrots", "fresh", "vegetables"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/carrot-table-with-fresh-vegetables_1268-33080.jpg?alt=media",
+    image: "",
     discount: 5,
   },
   {
@@ -29,7 +29,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["salad", "greens", "fresh"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Mixed%20Salad%20Greens.jpg?alt=media",
+    image: "",
     isNew: true,
   },
   {
@@ -39,7 +39,7 @@ const products = [
     stock: 200,
     category: "processing",
     tags: ["dried", "mango", "snack"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Dried%20Mango%20Slice.jpg?alt=media",
+    image: "",
   },
   {
     name: "Canned Tomato Sauce",
@@ -48,7 +48,7 @@ const products = [
     stock: 150,
     category: "processing",
     tags: ["canned", "sauce", "tomatoes"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Canned%20Tomato%20Sauce.jpg?alt=media",
+    image: "",
   },
   {
     name: "Organic Fertilizer",
@@ -57,7 +57,7 @@ const products = [
     stock: 150,
     category: "nutrition",
     tags: ["fertilizer", "organic", "soil"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Organic%20Fertilizer.jpg?alt=media",
+    image: "",
   },
   {
     name: "Plant Nutrition Pack",
@@ -66,7 +66,7 @@ const products = [
     stock: 80,
     category: "nutrition",
     tags: ["nutrients", "plant", "care"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Plant%20Nutrition%20Pack.jpg?alt=media",
+    image: "",
     discount: 10,
   },
   {
@@ -76,7 +76,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["strawberries", "berries", "fresh", "fruits"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Fresh%20Strawberries.jpg?alt=media",
+    image: "",
   },
   {
     name: "Fresh Apples",
@@ -85,7 +85,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["apples", "fruits", "fresh"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Fresh%20Apples.jpg?alt=media",
+    image: "",
   },
   {
     name: "Premium Blueberry Bushes",
@@ -94,7 +94,7 @@ const products = [
     stock: 25,
     category: "fruits-vegetables",
     tags: ["berries", "bushes", "perennial"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Premium%20Blueberry%20Bushes.jpg?alt=media",
+    image: "",
     comingSoon: true,
     expectedArrival: "July 2026",
   },
@@ -105,7 +105,7 @@ const products = [
     stock: 50,
     category: "processing",
     tags: ["seeds", "heirloom", "rare"],
-    image: "https://firebasestorage.googleapis.com/v0/b/devsolution-dfc75.firebasestorage.app/o/Heirloom%20Seed%20Collection.jpg?alt=media",
+    image: "",
     comingSoon: true,
     expectedArrival: "August 2026",
   },
