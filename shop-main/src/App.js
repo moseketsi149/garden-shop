@@ -35,19 +35,24 @@ function App() {
 useEffect(() => {
     const init = async () => {
    try {
-      console.log("Seeding products...");
-      await seedSampleProducts().catch((error) => {
-        console.warn("Product seeding failed; continuing with listener startup:", error?.message || error);
-      });
-      console.log("Starting product deduplication...");
-      await deduplicateProducts().catch((error) => {
-        console.warn("Product deduplication failed; continuing with listener startup:", error?.message || error);
-      });
-
-      console.log("Product deduplication completed, starting listeners...");
-
+      console.log("Starting product listeners...");
       dispatch(startProductsListener());
       dispatch(startLocationsListener());
+      console.log("Product listeners started.");
+
+      console.log("Seeding products in background...");
+      seedSampleProducts()
+        .then(() => console.log("Background seeding complete."))
+        .catch((error) => {
+          console.warn("Background product seeding failed:", error?.message || error);
+        });
+
+      console.log("Starting background product deduplication...");
+      deduplicateProducts()
+        .then(() => console.log("Background deduplication complete."))
+        .catch((error) => {
+          console.warn("Background deduplication failed:", error?.message || error);
+        });
     } catch (error) {
       console.error("Failed to start app:", error.message || error);
       setInitError(error?.message || "Failed to initialize app");

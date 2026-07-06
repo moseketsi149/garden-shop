@@ -47,6 +47,10 @@ export const startProductsListener = () => async (dispatch) => {
 
         dispatch(setProducts(products));
         dispatch(setProductsLoading(false));
+
+        if (products.length === 0) {
+          console.warn('Snapshot returned 0 products despite no listener error.');
+        }
       },
 
       (error) => {

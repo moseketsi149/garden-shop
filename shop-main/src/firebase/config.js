@@ -30,16 +30,4 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
-
-// Enable Firestore offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err?.code === 'failed-precondition') {
-    console.warn('Persistence failed: multiple tabs open');
-  } else if (err?.code === 'unimplemented') {
-    console.warn('Persistence not available: unimplemented');
-  } else {
-    console.warn('IndexedDB persistence error:', err);
-  }
-});
-
 export const storage = getStorage(app);
