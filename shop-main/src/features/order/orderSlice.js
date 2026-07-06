@@ -35,13 +35,17 @@ export const startProductsListener = () => async (dispatch) => {
           `Firestore products count: ${snapshot.size} (fromCache=${snapshot.metadata.fromCache}, hasPendingWrites=${snapshot.metadata.hasPendingWrites})`
         );
 
-        const products = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
+        const products = snapshot.docs
+          .map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data(),
+          }))
+          .filter((product, index, array) => {
+            return array.findIndex((item) => item.name === product.name) === index;
+          });
 
         console.log(
-          'Products loaded:',
+          'Products loaded (deduplicated):',
           products.map((p) => p.name)
         );
 

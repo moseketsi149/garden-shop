@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, AlertTriangle } from 'lucide-react';
 
@@ -14,6 +14,10 @@ const svgImage = (label) => {
 
 export const ProductImage = ({ src, alt, size = 'large', className = '' }) => {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
 
   const imageSrc = !failed && src ? src : svgImage(alt || 'Product');
 
