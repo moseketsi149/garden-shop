@@ -9,6 +9,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { sampleProducts } from '../../api/seedProducts';
 
 let unsubscribeProducts = null;
 
@@ -31,7 +32,7 @@ export const startProductsListener = () => async (dispatch) => {
 
       (snapshot) => {
         console.log(
-          `Firestore products count: ${snapshot.size}`
+          `Firestore products count: ${snapshot.size} (fromCache=${snapshot.metadata.fromCache}, hasPendingWrites=${snapshot.metadata.hasPendingWrites})`
         );
 
         const products = snapshot.docs.map((docSnap) => ({
@@ -53,6 +54,22 @@ export const startProductsListener = () => async (dispatch) => {
           'Firestore listener error:',
           error.message || error
         );
+
+        const fallback = ['not-found', 'unavailable', 'permission-denied'].includes(error?.code) ||
+          error?.message?.toLowerCase().includes('offline') ||
+          error?.message?.toLowerCase().includes('could not reach cloud firestore backend');
+
+        if (fallback) {
+          console.warn('Using fallback sample products due to Firestore failure');
+          const fallbackProducts = sampleProducts.map((product, index) => ({
+            id: product.name ? product.name.replace(/\s+/g, '-').toLowerCase() : `local-${index}`,
+            ...product,
+          }));
+          dispatch(setProducts(fallbackProducts));
+          dispatch(setProductsError(null));
+          dispatch(setProductsLoading(false));
+          return;
+        }
 
         dispatch(
           setProductsError(

@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -16,6 +16,12 @@ const firebaseConfig = {
 const requiredKeys = ['apiKey', 'authDomain', 'projectId'];
 const missingKeys = requiredKeys.filter(key => !firebaseConfig[key]);
 
+console.log('Firebase config:', {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+  storageBucket: firebaseConfig.storageBucket,
+});
+
 if (missingKeys.length > 0) {
   throw new Error(`Firebase Configuration Error: Missing required keys: ${missingKeys.join(', ')}`);
 }
@@ -23,16 +29,17 @@ if (missingKeys.length > 0) {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-export const db = initializeFirestore(app, {
-  cacheSizeBytes: 100 * 1024 * 1024
+export const db = getFirestore(app);
+
+// Enable Firestore offline persistence
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err?.code === 'failed-precondition') {
+    console.warn('Persistence failed: multiple tabs open');
+  } else if (err?.code === 'unimplemented') {
+    console.warn('Persistence not available: unimplemented');
+  } else {
+    console.warn('IndexedDB persistence error:', err);
+  }
 });
 
-// Enable Firestore offline persistence (will use cache settings in future)
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-        console.log('Persistence failed: multiple tabs open');
-    } else if (err.code === 'unimplemented') {
-        console.log('Persistence not available: unimplemented');
-    }
-});
 export const storage = getStorage(app);

@@ -111,6 +111,10 @@ const products = [
   },
 ];
 
+export const sampleProducts = [
+  ...products,
+];
+
 export const seedSampleProducts = async () => {
   try {
     const productsRef = collection(db, "products");
@@ -137,6 +141,7 @@ export const seedSampleProducts = async () => {
     console.log("Products seeded successfully!");
   } catch (error) {
     console.error("Seeding failed:", error);
+    throw error;
   }
 };
 
@@ -164,5 +169,6 @@ export const deduplicateProducts = async () => {
     console.log(`Deduplication complete. Kept ${seen.size} unique products.`);
   } catch (error) {
     console.error("Deduplication failed:", error);
+    throw error;
   }
 };

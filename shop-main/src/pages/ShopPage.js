@@ -2,18 +2,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import Fuse from "fuse.js";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { useDispatch, useSelector } from "react-redux";
 import ShopHeader from "../components/ShopHeader";
 import ProductCard from "../components/ProductCard";
 import ComingSoonCompact from "../components/ComingSoonCompact";
 import { seedSampleProducts } from "../api/seedProducts";
 
 export default function ShopPage() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchParams, setSearchParams] = useSearchParams();
+   const dispatch = useDispatch();
+   const products = useSelector((state) => state.order.products);
+   const loading = useSelector((state) => state.order.loading);
+   const error = useSelector((state) => state.order.error);
+   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [query, setQuery] = useState(() => searchParams.get("query") || "");
   const [companyFilter, setCompanyFilter] = useState(
@@ -26,33 +26,7 @@ export default function ShopPage() {
   const [imageSearchError, setImageSearchError] = useState("");
   const [productImageHashes, setProductImageHashes] = useState({});
   const [activeCategory, setActiveCategory] = useState("all");
-  const recognitionRef = useRef(null);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, "products"));
-        const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-        const unique = [];
-        const seen = new Set();
-        for (const product of items) {
-          if (!seen.has(product.name)) {
-            seen.add(product.name);
-            unique.push(product);
-          }
-        }
-
-        setProducts(unique);
-        setError(null);
-      } catch (err) {
-        setError(err.message || "Failed to fetch products");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+const recognitionRef = useRef(null);
 
   useEffect(() => {
     console.log("ShopPage Products:", products);
@@ -500,11 +474,15 @@ if (
             Search query: "{query}"
           </p>
 
-          <button
-            onClick={async () => {
-              await seedSampleProducts();
-              window.location.reload();
-            }}
+            <button
+              onClick={async () => {
+                try {
+                  await seedSampleProducts();
+                  window.location.reload();
+                } catch (err) {
+                  console.error("Seeding failed:", err);
+                }
+              }}
             className="mt-4 rounded-full bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700"
           >
             Seed Product Data

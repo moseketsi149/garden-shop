@@ -36,9 +36,13 @@ useEffect(() => {
     const init = async () => {
    try {
       console.log("Seeding products...");
-      await seedSampleProducts();
+      await seedSampleProducts().catch((error) => {
+        console.warn("Product seeding failed; continuing with listener startup:", error?.message || error);
+      });
       console.log("Starting product deduplication...");
-      await deduplicateProducts();
+      await deduplicateProducts().catch((error) => {
+        console.warn("Product deduplication failed; continuing with listener startup:", error?.message || error);
+      });
 
       console.log("Product deduplication completed, starting listeners...");
 
