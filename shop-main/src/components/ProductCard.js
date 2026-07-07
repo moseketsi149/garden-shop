@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import AsyncImage from './AsyncImage';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, AlertTriangle } from 'lucide-react';
 
@@ -12,30 +13,18 @@ const svgImage = (label) => {
   `)}`;
 };
 
-const isValidImageUrl = (src) => {
-  return typeof src === 'string' && /^(https?:\/\/|data:image\/)/.test(src);
-};
-
 export const ProductImage = ({ src, alt, size = 'large', className = '' }) => {
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    setFailed(false);
-  }, [src]);
-
-  const imageSrc = !failed && src && isValidImageUrl(src) ? src : svgImage(alt || 'Product');
-
   const sizeClasses =
     size === 'card'
       ? 'h-48 w-full rounded-2xl'
       : 'h-24 w-24 rounded-3xl';
 
   return (
-    <img
-      src={imageSrc}
+    <AsyncImage
+      src={src}
       alt={alt}
       className={`${sizeClasses} ${className} object-cover bg-slate-200`}
-      onError={() => setFailed(true)}
+      fallback={svgImage(alt || 'Product')}
       loading={size === 'card' ? 'lazy' : undefined}
     />
   );

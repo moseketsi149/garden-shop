@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import AsyncImage from '../components/AsyncImage';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, Save, X, Plus, ArrowLeft } from 'react-feather';
 import { toast } from 'react-toastify';
@@ -390,10 +391,11 @@ export default function InventoryPage() {
                 <tr key={product.id} className={editingId === product.id ? 'bg-slate-50' : ''}>
                   <td className="py-4">
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
+                      <AsyncImage
+                        src={product.image}
+                        alt={product.name}
                         className="h-12 w-12 rounded-xl object-cover"
+                        fallback={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23e2e8f0"/><text x="50" y="55" text-anchor="middle" font-size="12" fill="%2364748b">No image</text></svg>`)}`}
                       />
                       <div>
                         <div className="font-medium text-slate-900">{product.name}</div>

@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ShopHeader from "../components/ShopHeader";
 import ProductCard from "../components/ProductCard";
 import ComingSoonCompact from "../components/ComingSoonCompact";
+import { resolveImageUrl } from '../utils/storageUtils';
 import { seedSampleProducts } from "../api/seedProducts";
 
 export default function ShopPage() {
@@ -185,8 +186,13 @@ if (
   };
 
   const getImageHash = async (src) => {
-    const image = await loadImage(src);
-    return computeAverageColor(image);
+    try {
+      const resolved = await resolveImageUrl(src);
+      const image = await loadImage(resolved || src);
+      return computeAverageColor(image);
+    } catch (err) {
+      throw err;
+    }
   };
 
   const getImageDistance = (hashA, hashB) => {

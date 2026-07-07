@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import AsyncImage from './AsyncImage';
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock, Package } from "lucide-react";
 
@@ -104,18 +105,11 @@ const ComingSoonCarousel = ({ products }) => {
             >
               <div className="flex items-center gap-4">
                 <div className="h-20 w-20 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-md flex-shrink-0">
-                  <img
+                  <AsyncImage
                     src={currentProduct.image}
                     alt={currentProduct.name}
                     className="h-full w-full object-cover"
-                    onError={(e) => {
-                      e.target.src = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
-                          <rect width="800" height="600" fill="#fef3c7"/>
-                          <text x="400" y="300" text-anchor="middle" font-size="32" fill="#92400e">${currentProduct.name}</text>
-                        </svg>
-                      `)}`;
-                    }}
+                    fallback={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect width="800" height="600" fill="#fef3c7"/><text x="400" y="300" text-anchor="middle" font-size="32" fill="#92400e">'+(currentProduct.name||'')+'</text></svg>')}`}
                   />
                 </div>
                 <div>

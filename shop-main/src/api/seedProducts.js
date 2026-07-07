@@ -9,7 +9,7 @@ const products = [
     stock: 120,
     category: "fruits-vegetables",
     tags: ["tomatoes", "fresh", "vegetables"],
-    image: "https://images.unsplash.com/photo-1592841494900-afc89d229266?w=500&h=500&fit=crop",
+    image: "products/fresh-tomato-substitutes-2.jpg",
     isNew: true,
   },
   {
@@ -19,7 +19,7 @@ const products = [
     stock: 90,
     category: "fruits-vegetables",
     tags: ["carrots", "fresh", "vegetables"],
-    image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=500&h=500&fit=crop",
+    image: "products/carrot-table-with-fresh-vegetables_1268-33080.jpg",
     discount: 5,
   },
   {
@@ -29,7 +29,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["salad", "greens", "fresh"],
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=500&fit=crop",
+    image: "products/Mixed Salad Greens.jpg",
     isNew: true,
   },
   {
@@ -39,7 +39,7 @@ const products = [
     stock: 200,
     category: "processing",
     tags: ["dried", "mango", "snack"],
-    image: "https://images.unsplash.com/photo-1585518419759-a4ba46f4c0e6?w=500&h=500&fit=crop",
+    image: "products/Dried Mango Slice.jpg",
   },
   {
     name: "Canned Tomato Sauce",
@@ -48,7 +48,7 @@ const products = [
     stock: 150,
     category: "processing",
     tags: ["canned", "sauce", "tomatoes"],
-    image: "https://images.unsplash.com/photo-1599599810694-b5ac4dd64e90?w=500&h=500&fit=crop",
+    image: "products/Canned Tomato Sauce.jpg",
   },
   {
     name: "Organic Fertilizer",
@@ -57,7 +57,7 @@ const products = [
     stock: 150,
     category: "nutrition",
     tags: ["fertilizer", "organic", "soil"],
-    image: "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=500&h=500&fit=crop",
+    image: "products/Organic Fertilizer.jpg",
   },
   {
     name: "Plant Nutrition Pack",
@@ -66,7 +66,7 @@ const products = [
     stock: 80,
     category: "nutrition",
     tags: ["nutrients", "plant", "care"],
-    image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad576?w=500&h=500&fit=crop",
+    image: "products/Plant Nutrition Pack.jpg",
     discount: 10,
   },
   {
@@ -76,7 +76,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["strawberries", "berries", "fresh", "fruits"],
-    image: "https://images.unsplash.com/photo-1587393855258-8a7b3d7f15c1?w=500&h=500&fit=crop",
+    image: "products/Fresh Strawberries.jpg",
   },
   {
     name: "Fresh Apples",
@@ -85,7 +85,7 @@ const products = [
     stock: 60,
     category: "fruits-vegetables",
     tags: ["apples", "fruits", "fresh"],
-    image: "https://images.unsplash.com/photo-1560806887-1295a3f3e9b0?w=500&h=500&fit=crop",
+    image: "products/Fresh Apples.jpg",
   },
   {
     name: "Premium Blueberry Bushes",
@@ -94,7 +94,7 @@ const products = [
     stock: 25,
     category: "fruits-vegetables",
     tags: ["berries", "bushes", "perennial"],
-    image: "https://images.unsplash.com/photo-1599599810694-b5ac4dd64e90?w=500&h=500&fit=crop",
+    image: "products/Premium Blueberry Bushes.jpg",
     comingSoon: true,
     expectedArrival: "July 2026",
   },
@@ -105,7 +105,7 @@ const products = [
     stock: 50,
     category: "processing",
     tags: ["seeds", "heirloom", "rare"],
-    image: "https://images.unsplash.com/photo-1585518419759-a4ba46f4c0e6?w=500&h=500&fit=crop",
+    image: "products/Heirloom Seed Collection.jpg",
     comingSoon: true,
     expectedArrival: "August 2026",
   },

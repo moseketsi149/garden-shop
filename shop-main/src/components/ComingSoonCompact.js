@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import AsyncImage from './AsyncImage';
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
 
@@ -35,18 +36,11 @@ const ComingSoonCompact = ({ products }) => {
               className="flex flex-col items-center bg-white rounded-2xl p-2 border border-amber-100 shadow-sm hover:shadow-md transition"
             >
               <div className="h-14 w-14 rounded-lg overflow-hidden bg-slate-100 mb-1.5">
-                <img
+                <AsyncImage
                   src={product.image}
                   alt={product.name}
                   className="h-full w-full object-cover"
-                  onError={(e) => {
-                    e.target.src = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
-                        <rect width="800" height="600" fill="#fef3c7"/>
-                        <text x="400" y="300" text-anchor="middle" font-size="24" fill="#92400e">${product.name || "Product"}</text>
-                      </svg>
-                    `)}`;
-                  }}
+                  fallback={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect width="800" height="600" fill="#fef3c7"/><text x="400" y="300" text-anchor="middle" font-size="24" fill="#92400e">'+(product.name||'Product')+'</text></svg>')}`}
                 />
               </div>
               <span className="text-xs text-center text-slate-700 font-medium truncate w-full px-1 leading-tight">
