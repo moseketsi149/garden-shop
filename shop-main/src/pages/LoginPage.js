@@ -38,15 +38,29 @@ export default function LoginPage() {
       
       // Verify account type matches the user's existing profile role
       const userRole = profile.role || 'customer';
+      const isSeller = userRole === 'company-admin' || userRole === 'individual-seller';
+
       if (accountType === 'company' && userRole !== 'company-admin') {
-        throw new Error('This account is registered as a customer. For company access, please register a company account.');
+        throw new Error('This account is not registered as a company admin. Please select the correct login type.');
       }
-      if (accountType === 'company' && profile.paymentStatus !== 'paid') {
-        throw new Error('Your company subscription payment is pending. Please complete the subscription to access your account.');
-      }
+
       if (accountType === 'customer' && userRole !== 'customer' && userRole !== 'individual-seller') {
         throw new Error('This account is registered as a company admin. Please select the Company option to log in.');
       }
+
+      if (isSeller) {
+        if (profile.paymentStatus !== 'paid') {
+          throw new Error('Your seller subscription payment is pending. Please complete the monthly subscription before logging in.');
+        }
+
+        if (profile.nextBillingDate) {
+          const billingDate = new Date(profile.nextBillingDate);
+          if (billingDate < new Date()) {
+            throw new Error('Your seller subscription has expired. Please renew your monthly subscription before logging in.');
+          }
+        }
+      }
+
       return true;
     } catch (error) {
       if (error.code === 'unavailable' || error.message?.includes('offline')) {
@@ -76,9 +90,9 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
+      await validateLogin(result.user);
       toast.success('Welcome to the marketplace!');
       navigate(getRedirectPath(), { replace: true });
-      validateLoginAsync(result.user);
     } catch (error) {
       const friendlyMsg = error.code === 'auth/user-not-found' ? 'Email not found. Please check and try again.' 
         : error.code === 'auth/wrong-password' ? 'Incorrect password. Please try again.' 
@@ -93,9 +107,9 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
+      await validateLogin(result.user);
       toast.success('Welcome to the marketplace!');
       navigate(getRedirectPath(), { replace: true });
-      validateLoginAsync(result.user);
     } catch (error) {
       toast.error('Google login failed. Please try again or use email instead.');
     } finally {

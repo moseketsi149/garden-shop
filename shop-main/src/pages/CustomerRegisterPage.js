@@ -97,8 +97,8 @@ export default function CustomerRegisterPage() {
          updatedAt: serverTimestamp()
        });
 
-        toast.success('✅ Welcome! Your account is ready. You can now sign in and start shopping.');
-        navigate('/');
+        toast.success('✅ Welcome! Your account is ready and your customer profile is active.');
+        navigate('/', { replace: true });
      } catch (error) {
        console.error('Registration error:', error);
        if (error.code === 'auth/email-already-in-use') {
