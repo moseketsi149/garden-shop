@@ -85,7 +85,7 @@ export default function ProductCard({ product, onTagClick }) {
       <div className="mt-3 flex justify-between text-sm text-slate-600">
         <span>{product.stock} in stock</span>
 
-        {product.stock <= 100 && (
+        {product.stock <= 25 && (
           <span className="flex items-center gap-1 text-amber-700 bg-amber-100 px-2 py-1 rounded-full">
             <AlertTriangle size={14} />
             Low stock
