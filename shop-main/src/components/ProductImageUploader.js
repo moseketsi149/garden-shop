@@ -4,6 +4,19 @@ import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/fire
 import { storage } from '../firebase/config';
 import { db } from '../firebase/config';
 
+const findMatchingProductDoc = async (fileName) => {
+  const productsRef = collection(db, 'products');
+  const exactQuery = query(productsRef, where('name', '==', fileName));
+  const exactSnapshot = await getDocs(exactQuery);
+  if (!exactSnapshot.empty) return exactSnapshot.docs[0];
+
+  const allSnapshot = await getDocs(productsRef);
+  return allSnapshot.docs.find((docSnap) => {
+    const name = docSnap.data().name;
+    return typeof name === 'string' && name.trim().toLowerCase() === fileName.trim().toLowerCase();
+  }) || null;
+};
+
 export default function ProductImageUploader() {
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState([]);
@@ -24,11 +37,9 @@ export default function ProductImageUploader() {
           await uploadBytes(storageRef, file);
           const url = await getDownloadURL(storageRef);
 
-          const q = query(collection(db, 'products'), where('name', '==', fileName));
-          const snapshot = await getDocs(q);
+          const productDoc = await findMatchingProductDoc(fileName);
 
-          if (!snapshot.empty) {
-            const productDoc = snapshot.docs[0];
+          if (productDoc) {
             await updateDoc(doc(db, 'products', productDoc.id), { image: url });
             return { name: file.name, url, productUpdated: true };
           }

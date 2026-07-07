@@ -11,6 +11,29 @@ import {
 import { db } from '../../firebase/config';
 import { sampleProducts } from '../../api/seedProducts';
 
+const convertFirestoreTimestamps = (value) => {
+  if (value && typeof value.toDate === 'function') {
+    return value.toDate().toISOString();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(convertFirestoreTimestamps);
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, convertFirestoreTimestamps(item)])
+    );
+  }
+
+  return value;
+};
+
+const normalizeProduct = (docSnap) => {
+  const rawData = { id: docSnap.id, ...docSnap.data() };
+  return convertFirestoreTimestamps(rawData);
+};
+
 let unsubscribeProducts = null;
 
 /**
@@ -36,10 +59,7 @@ export const startProductsListener = () => async (dispatch) => {
         );
 
         const products = snapshot.docs
-          .map((docSnap) => ({
-            id: docSnap.id,
-            ...docSnap.data(),
-          }))
+          .map((docSnap) => normalizeProduct(docSnap))
           .filter((product, index, array) => {
             return array.findIndex((item) => item.name === product.name) === index;
           });

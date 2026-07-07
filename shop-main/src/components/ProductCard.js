@@ -12,6 +12,10 @@ const svgImage = (label) => {
   `)}`;
 };
 
+const isValidImageUrl = (src) => {
+  return typeof src === 'string' && /^(https?:\/\/|data:image\/)/.test(src);
+};
+
 export const ProductImage = ({ src, alt, size = 'large', className = '' }) => {
   const [failed, setFailed] = useState(false);
 
@@ -19,7 +23,7 @@ export const ProductImage = ({ src, alt, size = 'large', className = '' }) => {
     setFailed(false);
   }, [src]);
 
-  const imageSrc = !failed && src ? src : svgImage(alt || 'Product');
+  const imageSrc = !failed && src && isValidImageUrl(src) ? src : svgImage(alt || 'Product');
 
   const sizeClasses =
     size === 'card'
