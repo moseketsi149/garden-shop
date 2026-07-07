@@ -15,53 +15,12 @@ export default function RegisterPage() {
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [accountType, setAccountType] = useState('individual');
   const [loading, setLoading] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [pendingUid, setPendingUid] = useState(null);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
-  const [paymentDetails, setPaymentDetails] = useState({
-    phoneNumber: '',
-    bankName: '',
-    accountNumber: '',
-    reference: ''
-  });
   const navigate = useNavigate();
 
   const subscriptionFees = {
     company: { amount: 1000, label: 'M1,000.00' },
     individual: { amount: 750, label: 'M750.00' }
   };
-
-  const paymentMethods = [
-    {
-      id: 'mpesa',
-      name: 'M-Pesa',
-      description: 'Pay via M-Pesa mobile wallet in Lesotho or South Africa',
-      icon: '📱',
-      countries: ['Lesotho', 'South Africa']
-    },
-    {
-      id: 'ecocash',
-      name: 'EcoCash',
-      description: 'Pay via EcoCash mobile money in Lesotho & South Africa',
-      icon: '📲',
-      countries: ['Lesotho', 'South Africa']
-    },
-    {
-      id: 'fnb',
-      name: 'FNB Transfer',
-      description: 'Pay via FNB bank transfer in Lesotho or South Africa',
-      icon: '🏦',
-      countries: ['Lesotho', 'South Africa']
-    },
-    {
-      id: 'standard-bank',
-      name: 'Standard Bank Transfer',
-      description: 'Pay via Standard Bank transfer in Lesotho or South Africa',
-      icon: '🏦',
-      countries: ['Lesotho', 'South Africa']
-    }
-  ];
 
    const handleSubmit = async (event) => {
      event.preventDefault();
@@ -76,75 +35,59 @@ export default function RegisterPage() {
        const role = accountType === 'company' ? 'company-admin' : 'individual-seller';
 
        // Create initial user profile; sellers require payment to complete registration
-       await setDoc(doc(db, 'users', credential.user.uid), {
+       const pendingUid = credential.user.uid;
+       const pendingData = {
+         pendingUid,
+         accountType,
          email,
          name,
-         companyName,
          websiteName,
-         websiteUrl,
-         role,
-         accountType,
-         paymentStatus: (accountType === 'company' || accountType === 'individual') ? 'pending' : 'paid',
-         approvalStatus: 'pending',
-         tenant: websiteName || companyName || 'default',
-         createdAt: serverTimestamp()
-       });
+         companyName,
+         websiteUrl
+       };
+
+       try {
+         await setDoc(doc(db, 'users', pendingUid), {
+           email,
+           name,
+           companyName,
+           websiteName,
+           websiteUrl,
+           role,
+           accountType,
+           paymentStatus: 'pending',
+           approvalStatus: 'pending',
+           tenant: websiteName || companyName || 'default',
+           createdAt: serverTimestamp()
+         });
+       } catch (docError) {
+         console.error('Failed to create seller user profile before payment:', docError);
+         toast.warning('⚠️ Account created, but profile setup failed. Proceeding to payment.');
+       }
 
        if (accountType === 'company' || accountType === 'individual') {
-         setPendingUid(credential.user.uid);
-         toast.success('✅ Account created! Next: complete your subscription payment to start selling.');
-         navigate('/');
+         window.sessionStorage.setItem('sellerRegistrationPending', JSON.stringify(pendingData));
+         toast.success('✅ Account created! Please complete your subscription payment to start selling.');
+         navigate('/register/payment', {
+           state: pendingData
+         });
          return;
        }
 
         toast.success('✅ Account created successfully!');
         navigate('/');
      } catch (error) {
+       console.error('Seller registration failed:', error);
        const friendlyMsg = error.code === 'auth/email-already-in-use' ? '📧 This email is already registered.'
          : error.code === 'auth/weak-password' ? '🔐 Password must be at least 6 characters.'
-         : 'Account creation failed. Please try again.';
+         : error.code === 'auth/invalid-email' ? '📧 Please use a valid email address.'
+         : error.code === 'auth/operation-not-allowed' ? '🔐 Email/password signup is disabled in Firebase.'
+         : `Account creation failed: ${error.message || 'Please try again.'}`;
        toast.error(friendlyMsg);
      } finally {
        setLoading(false);
      }
    };
-
-  const handleConfirmPayment = async () => {
-    if (!pendingUid || !selectedPaymentMethod) {
-      toast.error('💳 Please choose a payment method to complete registration.');
-      return;
-    }
-
-    setPaymentProcessing(true);
-    try {
-      const fee = accountType === 'company' ? subscriptionFees.company : subscriptionFees.individual;
-      
-      await setDoc(doc(db, 'users', pendingUid), {
-        paymentStatus: 'paid',
-        paymentAmount: fee.amount,
-        paymentCurrency: 'LSL',
-        paymentMethod: selectedPaymentMethod,
-        paymentDetails: {
-          phoneNumber: paymentDetails.phoneNumber,
-          bankName: paymentDetails.bankName,
-          accountNumber: paymentDetails.accountNumber,
-          reference: paymentDetails.reference || `PAY-${Date.now()}`
-        },
-        paymentDate: serverTimestamp(),
-        subscriptionType: 'monthly',
-        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      }, { merge: true });
-
-toast.success(`✅ Payment received! You're all set to start selling.`);
-       setShowPaymentModal(false);
-       navigate('/');
-    } catch (err) {
-      console.error(err);
-      toast.error('Payment processing failed. Please try again.');
-    } finally {
-      setPaymentProcessing(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-emerald-50/30 px-6 py-12">
@@ -279,131 +222,6 @@ toast.success(`✅ Payment received! You're all set to start selling.`);
             </p>
           </div>
         </form>
-
-        {/* Payment Modal */}
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-white p-6 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-slate-900">💳 Complete Your Registration</h3>
-                <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 hover:text-slate-600">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="bg-emerald-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-slate-600">
-                  To activate your seller account and start listing your produce, please pay the monthly subscription:
-                </p>
-                <p className="text-2xl font-bold text-emerald-700 mt-2">
-                  {accountType === 'company' ? 'M1,000.00' : 'M750.00'} <span className="text-sm font-normal text-slate-500">/ month</span>
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-slate-700 mb-3">Select Payment Method</h4>
-                <div className="space-y-3">
-                  {paymentMethods.map((method) => (
-                    <label
-                      key={method.id}
-                      className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition ${
-                        selectedPaymentMethod === method.id 
-                          ? 'border-emerald-600 bg-emerald-50' 
-                          : 'border-slate-200 hover:border-emerald-400'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value={method.id}
-                        checked={selectedPaymentMethod === method.id}
-                        onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                        className="h-4 w-4 accent-emerald-600"
-                      />
-                      <span className="text-2xl">{method.icon}</span>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">{method.name}</p>
-                        <p className="text-xs text-slate-500">{method.description}</p>
-                        <p className="text-[10px] text-slate-400 mt-1">Available in: {method.countries.join(', ')}</p>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Payment Details Form */}
-              {selectedPaymentMethod && (
-                <div className="mb-6 p-4 bg-slate-50 rounded-xl">
-                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Payment Details</h4>
-                  
-                  {(selectedPaymentMethod === 'mpesa' || selectedPaymentMethod === 'ecocash') && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Mobile Number</label>
-                      <input
-                        type="tel"
-                        value={paymentDetails.phoneNumber}
-                        onChange={(e) => setPaymentDetails({ ...paymentDetails, phoneNumber: e.target.value })}
-                        placeholder="e.g., +266 123 4567"
-                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3"
-                      />
-                      <p className="text-xs text-slate-500 mt-2">
-                        You'll receive a payment request on this number. Complete the payment in your mobile money app.
-                      </p>
-                    </div>
-                  )}
-
-                  {(selectedPaymentMethod === 'fnb' || selectedPaymentMethod === 'standard-bank') && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Bank Account Number</label>
-                        <input
-                          type="text"
-                          value={paymentDetails.accountNumber}
-                          onChange={(e) => setPaymentDetails({ ...paymentDetails, accountNumber: e.target.value })}
-                          placeholder="Enter your account number"
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3"
-                        />
-                      </div>
-                      <div className="bg-amber-50 p-3 rounded-lg">
-                        <p className="text-xs text-amber-800">
-                          <strong>Bank Transfer Instructions:</strong><br/>
-                          Transfer {accountType === 'company' ? 'M1,000.00' : 'M750.00'} to:<br/>
-                          Bank: {selectedPaymentMethod === 'fnb' ? 'FNB' : 'Standard Bank'}<br/>
-                          Account Name: Garden Shop Marketplace<br/>
-                          Account Number: 3-4-5-6-7-8-9<br/>
-                          Reference: {pendingUid?.slice(0, 8) || 'REG'}<br/><br/>
-                          After transfer, click "Confirm Payment" below.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-3">
-                <button 
-                  onClick={() => setShowPaymentModal(false)} 
-                  className="rounded-xl border border-slate-200 px-6 py-3 text-slate-700 hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleConfirmPayment} 
-                  disabled={paymentProcessing || !selectedPaymentMethod} 
-                  className="rounded-xl bg-emerald-700 px-6 py-3 text-white font-medium hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {paymentProcessing ? 'Processing...' : `Pay ${accountType === 'company' ? 'M1,000.00' : 'M750.00'}`}
-                </button>
-              </div>
-
-              <p className="text-xs text-center text-slate-500 mt-4">
-                Secure payment powered by encrypted transactions. Your payment information is protected.
-              </p>
-            </div>
-          </div>
-        )}
         </div>
       </div>
     </div>

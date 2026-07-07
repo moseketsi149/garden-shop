@@ -16,6 +16,7 @@ import LocationsPage from './pages/LocationsPage';
 import TestimonialPage from './pages/TestimonialPage';
 import LogoutPage from './pages/LogoutPage';
 import WeatherPage from './pages/WeatherPage';
+import RegisterPaymentPage from './pages/RegisterPaymentPage';
 import PrivateRoute from './components/PrivateRoute';
 import Footer from './components/Footer';
 import BackButton from './components/BackButton';
@@ -109,6 +110,7 @@ useEffect(() => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/register/customer" element={<CustomerRegisterPage />} />
+          <Route path="/register/payment" element={<RegisterPaymentPage />} />
           <Route path="/admin/upload-images" element={<ProductImageUploader />} />
           <Route path="/admin/storage-images" element={<StorageImageViewer />} />
         </Routes>
