@@ -19,11 +19,13 @@ export default function LoginPage() {
     try {
       const snapshot = await getDoc(doc(db, 'users', user.uid));
       const profile = snapshot.exists() ? snapshot.data() : {};
+      const userRole = profile.role || 'customer';
+      const isSeller = userRole === 'company-admin' || userRole === 'individual-seller';
       
-      if (profile.approvalStatus === 'pending') {
+      if (isSeller && profile.approvalStatus === 'pending') {
         throw new Error('Your registration is pending admin approval. Please wait for approval before logging in.');
       }
-      if (profile.approvalStatus === 'rejected') {
+      if (isSeller && profile.approvalStatus === 'rejected') {
         throw new Error('Your registration was rejected. Please contact support for more information.');
       }
       
@@ -37,9 +39,6 @@ export default function LoginPage() {
       }
       
       // Verify account type matches the user's existing profile role
-      const userRole = profile.role || 'customer';
-      const isSeller = userRole === 'company-admin' || userRole === 'individual-seller';
-
       if (accountType === 'company' && userRole !== 'company-admin') {
         throw new Error('This account is not registered as a company admin. Please select the correct login type.');
       }
@@ -89,12 +88,13 @@ export default function LoginPage() {
     event.preventDefault();
     try {
       setLoading(true);
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
       await validateLogin(result.user);
       toast.success('Welcome to the marketplace!');
       navigate(getRedirectPath(), { replace: true });
     } catch (error) {
-      const friendlyMsg = error.code === 'auth/user-not-found' ? 'Email not found. Please check and try again.' 
+      const friendlyMsg = error.code === 'auth/invalid-credential' ? 'Email or password does not match an account. Check the email and password, or reset the password.'
+        : error.code === 'auth/user-not-found' ? 'Email not found. Please check and try again.' 
         : error.code === 'auth/wrong-password' ? 'Incorrect password. Please try again.' 
         : error.message || 'Login failed. Please try again.';
       toast.error(friendlyMsg);
