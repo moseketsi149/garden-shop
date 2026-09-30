@@ -4,8 +4,12 @@ import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/fire
 import { storage } from '../firebase/config';
 import { db } from '../firebase/config';
 
-const findMatchingProductDoc = async (fileName) => {
+const findMatchingProductDoc = async (fileName, imagePath) => {
   const productsRef = collection(db, 'products');
+  const imageQuery = query(productsRef, where('image', '==', imagePath));
+  const imageSnapshot = await getDocs(imageQuery);
+  if (!imageSnapshot.empty) return imageSnapshot.docs[0];
+
   const exactQuery = query(productsRef, where('name', '==', fileName));
   const exactSnapshot = await getDocs(exactQuery);
   if (!exactSnapshot.empty) return exactSnapshot.docs[0];
@@ -37,7 +41,7 @@ export default function ProductImageUploader() {
           await uploadBytes(storageRef, file);
           const url = await getDownloadURL(storageRef);
 
-          const productDoc = await findMatchingProductDoc(fileName);
+          const productDoc = await findMatchingProductDoc(fileName, `products/${file.name}`);
 
           if (productDoc) {
             await updateDoc(doc(db, 'products', productDoc.id), { image: url });
