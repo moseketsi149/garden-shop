@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, deleteUser, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { ArrowLeft } from 'lucide-react';
 import { auth, db } from '../firebase/config';
@@ -65,12 +65,14 @@ export default function CustomerRegisterPage() {
        return;
      }
 
+     let createdUser = null;
      try {
        setLoading(true);
        
        // Create user account
        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
        const user = userCredential.user;
+      createdUser = user;
        
        // Update display name
        await updateProfile(user, {
@@ -96,17 +98,27 @@ export default function CustomerRegisterPage() {
          createdAt: serverTimestamp(),
          updatedAt: serverTimestamp()
        });
+       createdUser = null;
 
         toast.success('✅ Welcome! Your account is ready and your customer profile is active.');
         navigate('/', { replace: true });
      } catch (error) {
        console.error('Registration error:', error);
+       if (createdUser) {
+         try {
+           await deleteUser(createdUser);
+         } catch (cleanupError) {
+           console.error('Could not remove incomplete Auth account:', cleanupError);
+         }
+       }
        if (error.code === 'auth/email-already-in-use') {
-         toast.error('📧 This email is already registered. Log in instead or use a different email.');
+         toast.error('📧 This email already has an account. Log in, or remove the incomplete test account from Firebase Authentication before retrying.');
        } else if (error.code === 'auth/invalid-email') {
          toast.error('📧 Please enter a valid email address (e.g., name@example.com).');
        } else if (error.code === 'auth/weak-password') {
          toast.error('🔐 Use a stronger password (at least 6 characters with letters and numbers).');
+       } else if (error.code === 'permission-denied') {
+         toast.error('Your account profile was blocked by Firestore. Publish the Firestore rules, then try registering again.');
        } else {
          toast.error('Unable to create your account. Please try again or contact support.');
        }
