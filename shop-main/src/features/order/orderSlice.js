@@ -34,6 +34,12 @@ const normalizeProduct = (docSnap) => {
   return convertFirestoreTimestamps(rawData);
 };
 
+const getSampleProducts = () =>
+  sampleProducts.map((product, index) => ({
+    id: product.name ? product.name.replace(/\s+/g, '-').toLowerCase() : `local-${index}`,
+    ...product,
+  }));
+
 let unsubscribeProducts = null;
 
 /**
@@ -58,11 +64,14 @@ export const startProductsListener = () => async (dispatch) => {
           `Firestore products count: ${snapshot.size} (fromCache=${snapshot.metadata.fromCache}, hasPendingWrites=${snapshot.metadata.hasPendingWrites})`
         );
 
-        const products = snapshot.docs
+        const firestoreProducts = snapshot.docs
           .map((docSnap) => normalizeProduct(docSnap))
           .filter((product, index, array) => {
             return array.findIndex((item) => item.name === product.name) === index;
           });
+        const products = firestoreProducts.length > 0
+          ? firestoreProducts
+          : getSampleProducts();
 
         console.log(
           'Products loaded (deduplicated):',
@@ -72,8 +81,8 @@ export const startProductsListener = () => async (dispatch) => {
         dispatch(setProducts(products));
         dispatch(setProductsLoading(false));
 
-        if (products.length === 0) {
-          console.warn('Snapshot returned 0 products despite no listener error.');
+        if (firestoreProducts.length === 0) {
+          console.warn('Firestore snapshot was empty; using fallback sample products.');
         }
       },
 
@@ -89,11 +98,7 @@ export const startProductsListener = () => async (dispatch) => {
 
         if (fallback) {
           console.warn('Using fallback sample products due to Firestore failure');
-          const fallbackProducts = sampleProducts.map((product, index) => ({
-            id: product.name ? product.name.replace(/\s+/g, '-').toLowerCase() : `local-${index}`,
-            ...product,
-          }));
-          dispatch(setProducts(fallbackProducts));
+          dispatch(setProducts(getSampleProducts()));
           dispatch(setProductsError(null));
           dispatch(setProductsLoading(false));
           return;
